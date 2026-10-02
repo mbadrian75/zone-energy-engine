@@ -11,6 +11,7 @@ from zone_energy.engine.break_evidence_calculator import (
 from zone_energy.engine.break_time_calculator import (
     BreakTimeCalculator,
 )
+from zone_energy.engine.market_energy_snapshot import MarketEnergySnapshot
 from zone_energy.models import (
     BreakRecord,
     Candle,
@@ -34,6 +35,27 @@ class BreakRecordFactory:
     ) -> None:
         self._barrier_calculator = BarrierCalculator(
             config
+        )
+
+    def create_from_snapshot(
+        self,
+        zone: Zone,
+        interaction: Interaction,
+        break_candle: Candle,
+        break_index: int,
+        snapshot: MarketEnergySnapshot,
+    ) -> BreakRecord:
+        """Reuse the same pre-break snapshot for every break on this candle."""
+        if break_index != snapshot.candle_index:
+            raise ValueError("Break and market snapshot must refer to the same candle")
+        zone_energy, median_energy = snapshot.reference_for_break(zone.id)
+        return self.create(
+            zone=zone,
+            interaction=interaction,
+            break_candle=break_candle,
+            break_index=break_index,
+            broken_zone_energy_at_break=zone_energy,
+            median_active_zone_energy_at_break=median_energy,
         )
 
     def create(
