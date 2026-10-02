@@ -26,12 +26,12 @@ class InteractionBaseEnergyCalculator:
             else:
                 evidence.append(value)
 
-        # Undefined evidence must not be silently counted as zero.
-        if missing:
-            return None, None
+        # Sum only known evidence; individual None values remain in break records.
         try:
-            total = fsum(evidence)
-            base = None if movement_energy is None else fsum((movement_energy, total))
+            total = None if missing and not evidence else fsum(evidence)
+            base = (None if movement_energy is None and not evidence else
+                    fsum((movement_energy if movement_energy is not None else 0,
+                          total if total is not None else 0)))
         except OverflowError as error:
             raise ValueError("Interaction energy exceeds the finite numeric range") from error
         return total, base

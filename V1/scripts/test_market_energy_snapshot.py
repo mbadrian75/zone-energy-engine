@@ -43,17 +43,16 @@ class MarketEnergySnapshotTests(unittest.TestCase):
         self.assertEqual(snapshot.reference_for_break(1), (0, 1))
         snapshot = self.calculator.capture([make_zone(1, 0)], 1000, 1000)
         self.assertEqual(snapshot.median_active_energy, 0)
-        with self.assertRaises(ValueError):
-            snapshot.reference_for_break(1)
+        self.assertEqual(snapshot.reference_for_break(1), (0, 0))
 
     def test_empty_or_undefined_population_has_no_median(self):
         self.assertIsNone(self.calculator.capture([], 1000, 1000).median_active_energy)
         snapshot = self.calculator.capture([make_zone(1, 20), make_zone(2, None)], 1000, 1000)
-        self.assertIsNone(snapshot.median_active_energy)
-        with self.assertRaises(ValueError):
-            snapshot.reference_for_break(1)
-        with self.assertRaises(ValueError):
-            snapshot.reference_for_break(2)
+        self.assertEqual(snapshot.median_active_energy, 1)
+        self.assertEqual(snapshot.reference_for_break(1), (1, 1))
+        self.assertEqual(snapshot.reference_for_break(2), (None, 1))
+        unknown = self.calculator.capture([make_zone(2, None)], 1000, 1000)
+        self.assertIsNone(unknown.median_active_energy)
 
     def test_snapshot_remains_immutable_after_live_changes(self):
         zone = make_zone(1, 20)

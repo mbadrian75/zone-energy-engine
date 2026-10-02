@@ -16,13 +16,9 @@ class MarketEnergySnapshot:
     zone_energies: tuple[tuple[int, float | None], ...]
     median_active_energy: float | None
 
-    def reference_for_break(self, zone_id: int) -> tuple[float, float]:
+    def reference_for_break(self, zone_id: int) -> tuple[float | None, float | None]:
         for captured_id, energy in self.zone_energies:
             if captured_id == zone_id:
-                if energy is None:
-                    raise ValueError("Broken zone energy is undefined in this snapshot")
-                if self.median_active_energy is None or self.median_active_energy <= 0:
-                    raise ValueError("Break reference requires a defined positive market median")
                 return energy, self.median_active_energy
         raise ValueError("Broken zone was not ACTIVE in this snapshot")
 
@@ -30,9 +26,8 @@ class MarketEnergySnapshot:
 class MarketEnergySnapshotCalculator:
     """Capture one shared reference before processing any breaks on a candle.
 
-    All supplied ACTIVE zones participate, including zero-energy zones.
-    An undefined ACTIVE-zone energy makes the median undefined. No bootstrap
-    values are replaced with zero or omitted from the reference population.
+    Defined ACTIVE-zone energies participate, including zero-energy zones.
+    Undefined energies remain in the snapshot but do not enter the median.
     The caller supplies confirmed current history and chooses the zone universe.
     """
 
@@ -59,9 +54,9 @@ class MarketEnergySnapshotCalculator:
                 zone, current_candle_index, year_candles,
             )))
 
-        values = [energy for _, energy in captured]
+        values = [energy for _, energy in captured if energy is not None]
         reference = None
-        if values and all(value is not None for value in values):
+        if values:
             # Scale before taking the median to avoid overflow of two large
             # middle values in even-sized populations.
             scale = max(values)

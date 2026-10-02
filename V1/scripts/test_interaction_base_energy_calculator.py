@@ -30,7 +30,9 @@ class InteractionBaseEnergyCalculatorTests(unittest.TestCase):
     def test_bootstrap_and_missing_evidence(self):
         self.assertEqual(InteractionBaseEnergyCalculator.calculate(None, []), (0, None))
         self.assertEqual(InteractionBaseEnergyCalculator.calculate(None, [None]), (None, None))
-        self.assertEqual(InteractionBaseEnergyCalculator.calculate(4, [2, None]), (None, None))
+        self.assertEqual(InteractionBaseEnergyCalculator.calculate(4, [2, None]), (2, 6))
+        self.assertEqual(InteractionBaseEnergyCalculator.calculate(4, [None]), (None, 4))
+        self.assertEqual(InteractionBaseEnergyCalculator.calculate(None, [2, None]), (2, 2))
 
     def test_invalid_values_and_overflow(self):
         for invalid in (-1, float("nan"), float("inf")):

@@ -52,6 +52,13 @@ Historical market replay and strategy calibration require separate validation.
 
 ## Save engine results in the candle database
 
+Bootstrap policy: undefined energy remains `None` in historical records.
+Interaction/zone sums and the active-zone median use defined contributions
+only. A zone with only undefined closed energy remains undefined. A break
+with an unknown zone energy or a missing/zero median is still recorded and
+changes the zone to BROKEN; barrier ratio, cost and break evidence remain
+`None` until a usable reference exists. Historical snapshots are not rescored.
+
 `EngineResultsRepository` defaults to `mongodb://localhost:27017/` and the
 existing `market_data` database. It writes only to `zone_energy_checkpoints`;
 the `xauusd_*` candle collections are not used for writes.

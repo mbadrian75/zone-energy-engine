@@ -60,6 +60,8 @@ class EffectiveZoneEnergyCalculatorTests(unittest.TestCase):
     def test_undefined_closed_energy_is_not_zero(self):
         zone = make_zone()
         zone.interactions = [closed(1, 0, 100), closed(2, 500, None)]
+        self.assertEqual(self.calculator.calculate(zone, 1000, 1000), 5)
+        zone.interactions = [closed(2, 500, None)]
         self.assertIsNone(self.calculator.calculate(zone, 1000, 1000))
 
     def test_invalid_empty_zone_time_inputs(self):

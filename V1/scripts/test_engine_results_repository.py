@@ -1,6 +1,7 @@
 import sys
 import unittest
 from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -67,6 +68,20 @@ class EngineResultsRepositoryTests(unittest.TestCase):
         zone = zone_fixture()
         self.assertEqual(self.save([zone]), self.save([zone]))
         self.assertEqual(len(self.client.collection.documents), 1)
+
+    def test_unknown_break_references_roundtrip_without_becoming_zero(self):
+        zone = zone_fixture()
+        zone.interactions[0].breaks[0] = replace(
+            zone.interactions[0].breaks[0], broken_zone_energy_at_break=None,
+            median_active_zone_energy_at_break=None, barrier_ratio=None,
+            barrier_cost=None, break_evidence=None,
+        )
+        checkpoint_id = self.save([zone])
+        restored = self.repository.load_zones(checkpoint_id)
+        self.assertEqual(restored, [zone])
+        record = restored[0].interactions[0].breaks[0]
+        self.assertIsNone(record.barrier_cost)
+        self.assertIsNone(record.broken_zone_energy_at_break)
 
     def test_conflicting_save_cannot_rewrite_checkpoint(self):
         zone = zone_fixture()

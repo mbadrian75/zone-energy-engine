@@ -76,14 +76,17 @@ class BreakProcessorTests(unittest.TestCase):
         self.assertEqual(self.processor.process(current, origin, history, candle, 1000, 1000), [])
         self.assertEqual(history, before)
 
-    def test_undefined_median_fails_without_mutation(self):
+    def test_undefined_zone_energy_records_break_without_blocking(self):
         origin, first, second, current, candle = scenario()
         second.interactions[0].base_energy = None
         history = [origin, first, second]
-        before = deepcopy(history)
-        with self.assertRaises(ValueError):
-            self.processor.process(current, origin, history, candle, 1000, 1000)
-        self.assertEqual(history, before)
+        records = self.processor.process(current, origin, history, candle, 1000, 1000)
+        self.assertEqual(len(records), 2)
+        self.assertIsNotNone(records[0].break_evidence)
+        self.assertIsNone(records[1].broken_zone_energy_at_break)
+        self.assertIsNone(records[1].break_evidence)
+        self.assertEqual(second.state, ZoneState.BROKEN)
+        self.assertIsNone(second.interactions[0].base_energy)
 
     def test_failure_on_second_record_keeps_first_break_uncommitted(self):
         origin, first, second, current, _ = scenario()

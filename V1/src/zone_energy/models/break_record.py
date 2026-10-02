@@ -14,11 +14,11 @@ class BreakRecord:
 
     break_time_from_origin: int
 
-    broken_zone_energy_at_break: float
-    median_active_zone_energy_at_break: float
+    broken_zone_energy_at_break: float | None
+    median_active_zone_energy_at_break: float | None
 
-    barrier_ratio: float
-    barrier_cost: float
+    barrier_ratio: float | None
+    barrier_cost: float | None
 
     displacement: float
     displacement_ratio: float

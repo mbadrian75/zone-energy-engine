@@ -1,3 +1,5 @@
+from math import isfinite
+
 from zone_energy.config import EngineConfig
 from zone_energy.engine.barrier_calculator import (
     BarrierCalculator,
@@ -64,18 +66,21 @@ class BreakRecordFactory:
         interaction: Interaction,
         break_candle: Candle,
         break_index: int,
-        broken_zone_energy_at_break: float,
-        median_active_zone_energy_at_break: float,
+        broken_zone_energy_at_break: float | None,
+        median_active_zone_energy_at_break: float | None,
     ) -> BreakRecord:
 
-        barrier_ratio, barrier_cost = (
-            self._barrier_calculator.calculate(
+        for value in (broken_zone_energy_at_break, median_active_zone_energy_at_break):
+            if value is not None and (not isfinite(value) or value < 0):
+                raise ValueError("Energy snapshots must be finite and nonnegative")
+        barrier_ratio = barrier_cost = None
+        if (broken_zone_energy_at_break is not None
+                and median_active_zone_energy_at_break is not None
+                and median_active_zone_energy_at_break > 0):
+            barrier_ratio, barrier_cost = self._barrier_calculator.calculate(
                 zone_energy=broken_zone_energy_at_break,
-                median_active_energy=(
-                    median_active_zone_energy_at_break
-                ),
+                median_active_energy=median_active_zone_energy_at_break,
             )
-        )
 
         (
             break_time_from_origin,
@@ -102,8 +107,9 @@ class BreakRecordFactory:
             _displacement_evidence,
             break_evidence,
         ) = BreakEvidenceCalculator.calculate(
-            barrier_cost=barrier_cost,
-            persistence=persistence,
+            # Still validate displacement; unavailable barrier evidence stays None.
+            barrier_cost=barrier_cost if barrier_cost is not None else 0,
+            persistence=persistence if barrier_cost is not None else None,
             displacement_ratio=displacement_ratio,
         )
 

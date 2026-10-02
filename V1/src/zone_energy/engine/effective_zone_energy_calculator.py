@@ -8,8 +8,8 @@ from zone_energy.models import InteractionState, Zone
 class EffectiveZoneEnergyCalculator:
     """Sum independently decayed finalized interactions without changing history.
 
-    OPEN interactions have no finalized contribution. An undefined closed
-    interaction makes the total undefined, rather than silently counting as zero.
+    OPEN interactions have no finalized contribution. Undefined closed
+    interactions remain in history but do not suppress defined contributions.
     The caller supplies a zone snapshot containing only confirmed events.
     ACTIVE and BROKEN zones retain the same historical energy calculation.
     """
@@ -51,7 +51,7 @@ class EffectiveZoneEnergyCalculator:
             else:
                 energies.append(energy)
 
-        if undefined:
+        if undefined and not energies:
             return None
         try:
             return fsum(energies)
