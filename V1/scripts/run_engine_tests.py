@@ -8,7 +8,8 @@ import sys
 
 
 SCRIPTS = Path(__file__).resolve().parent
-DATABASE_TESTS = {"test_market_repository.py", "test_zone_boundary_service.py"}
+DATABASE_TESTS = {"test_market_repository.py", "test_zone_boundary_service.py",
+                  "test_engine_results_repository_mongodb.py"}
 
 
 def main() -> int:
