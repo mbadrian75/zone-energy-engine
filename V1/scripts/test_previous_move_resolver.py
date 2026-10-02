@@ -58,7 +58,6 @@ class PreviousMoveResolverTests(unittest.TestCase):
         unrelated = movement(source.id, 12, 120, 22)
         InteractionCloser.close(unrelated, source, other_destination)
         source.interactions.append(unrelated)
-        current.start_index = 30
         self.assertIs(PreviousMoveResolver.resolve(current, origin, [source]), incoming)
 
     def test_no_reference_resets_bootstrap(self):

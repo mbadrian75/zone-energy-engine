@@ -1,15 +1,18 @@
 from collections.abc import Iterable
 from math import isfinite
 
+from zone_energy.engine.return_move_reference_resolver import ReturnMoveReferenceResolver
 from zone_energy.models import Interaction, InteractionState, Zone
 
 
 class PreviousMoveResolver:
-    """Resolve an incoming closed move from an opposite zone.
+    """Resolve the incoming reference for initial and return interactions.
 
     Endpoints follow InteractionCloser: the destination zone's
     creation_extreme and creation_index. The caller supplies zone history,
     including broken zones, so historical references remain available.
+    Return reactions measure from the last opposite zone's creation extreme
+    to the new reaction extreme, rather than reusing the initial arrival.
     Energy calculation is handled separately.
     """
 
@@ -18,11 +21,13 @@ class PreviousMoveResolver:
         interaction: Interaction,
         origin_zone: Zone,
         zones: Iterable[Zone],
-    ) -> Interaction | None:
+    ) -> Interaction | Zone | None:
         if interaction.zone_id != origin_zone.id:
             raise ValueError("Interaction does not belong to origin_zone")
         if interaction.start_index < origin_zone.creation_index:
             raise ValueError("Interaction starts before origin_zone exists")
+        if interaction.start_index > origin_zone.creation_index:
+            return ReturnMoveReferenceResolver.resolve(interaction, origin_zone, zones)
 
         candidates = []
         for zone in zones:

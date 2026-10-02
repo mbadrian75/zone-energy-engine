@@ -1,5 +1,8 @@
 from math import isfinite
+from collections.abc import Iterable
+from dataclasses import replace
 
+from zone_energy.engine.previous_move_resolver import PreviousMoveResolver
 from zone_energy.engine.reversal_detector import ReversalDetector
 from zone_energy.engine.interaction_starter import (
     InteractionStarter,
@@ -16,16 +19,37 @@ from zone_energy.models import (
 
 
 class ReturnReversalProcessor:
-    """
-    Processes a valid Return + Reversal event
-    on an existing ACTIVE zone.
+    """Process valid return reversals on an existing ACTIVE zone."""
 
-    Detection:
-        ReturnReversalDetector
-
-    New interaction:
-        InteractionStarter
-    """
+    @staticmethod
+    def process_with_reference(
+        zone: Zone,
+        reversal: Reversal,
+        c1: Candle,
+        c2: Candle,
+        c3: Candle,
+        interaction_id: int,
+        current_candle_index: int,
+        zones: Iterable[Zone],
+    ) -> Interaction | None:
+        """Start a confirmed return and assign its incoming reference atomically."""
+        history = list(zones)
+        if not any(item is zone for item in history):
+            raise ValueError("Zone history must include the supplied zone")
+        if len({item.id for item in history}) != len(history):
+            raise ValueError("Zone history contains duplicate IDs")
+        pending_zone = replace(zone, interactions=list(zone.interactions))
+        interaction = ReturnReversalProcessor.process_confirmed(
+            pending_zone, reversal, c1, c2, c3, interaction_id, current_candle_index,
+        )
+        if interaction is None:
+            return None
+        if any(move.id == interaction_id for item in history for move in item.interactions):
+            raise ValueError("Interaction ID already exists in market history")
+        PreviousMoveResolver.resolve(interaction, zone, history)
+        zone.interactions.append(interaction)
+        zone.last_interaction_origin_index = pending_zone.last_interaction_origin_index
+        return interaction
 
     @staticmethod
     def process_confirmed(
