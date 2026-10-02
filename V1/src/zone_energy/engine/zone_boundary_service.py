@@ -1,8 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from zone_energy.config import EngineConfig
-from zone_energy.data import MarketDataRepository
 from zone_energy.engine.timeframe_window import TimeframeWindow
 from zone_energy.engine.zone_boundary_detector import ZoneBoundaryDetector
 from zone_energy.models import Candle, Reversal
+
+if TYPE_CHECKING:
+    from zone_energy.data import MarketDataRepository
 
 
 class ZoneBoundaryService:
