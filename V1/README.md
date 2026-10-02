@@ -50,6 +50,36 @@ python -B V1/scripts/run_engine_tests.py --include-database
 These tests verify engine components and synthetic lifecycle scenarios.
 Historical market replay and strategy calibration require separate validation.
 
+## Replay real candles and save results
+
+```powershell
+python -B V1/scripts/run_replay.py --timeframe H1 --start 2025-01-01 --end 2025-02-01 --reference-year 2025 --checkpoint-every 100
+```
+
+Use `--reference-year` only for a year whose candle history is fully populated;
+the command reports the actual candle count used for decay. Alternatively pass
+an explicitly calibrated `--year-candles` count. Dates follow the timestamp
+convention of the stored candles; `--end` is exclusive. M15 data must also exist
+for each main-timeframe C2 window.
+
+The replay keeps one OPEN interaction. An opposite confirmed reaction closes
+the current move at its new extreme and starts the next interaction. Same-role
+reversals do not start concurrent moves. Role changes use the external price
+side saved before the current candle. Reactions are confirmed before current
+candle breaks; all breaks in that batch share a pre-break snapshot.
+
+Overlapping eligible reaction zones are reported as an ambiguity and abort the
+current candle without saving partial state. Physical breaks lacking an eligible
+confirmed origin are retained under `replay_context.unattributed_breaks`; no
+origin energy is fabricated. Missing M15 boundaries skip creation of that zone.
+
+Periodic checkpoints and the final state are written to
+`market_data.zone_energy_checkpoints`. Each run gets a unique ID unless
+`--run-id` is supplied. Set `ZONE_ENERGY_MONGO_URI` for a different connection,
+and `--database` for a different database. Candle collections remain read-only.
+This initial replay starts from the beginning of the supplied range; loading a
+checkpoint into models is supported, but resuming mid-run is not yet implemented.
+
 ## Save engine results in the candle database
 
 Bootstrap policy: undefined energy remains `None` in historical records.

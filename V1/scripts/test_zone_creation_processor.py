@@ -41,18 +41,19 @@ class ZoneCreationProcessorTests(unittest.TestCase):
     def test_same_type_creation_does_not_close_existing_move(self):
         history = []
         first = create(history, 1, ZoneType.SUPPORT, 100, 10)
-        create(history, 2, ZoneType.SUPPORT, 95, 20)
+        with self.assertRaises(ValueError):
+            create(history, 2, ZoneType.SUPPORT, 95, 20)
         self.assertEqual(first.interactions[0].state, InteractionState.OPEN)
 
-    def test_all_opposite_open_moves_close_and_latest_is_reference(self):
+    def test_multiple_open_moves_are_rejected(self):
         history = []
         origin = create(history, 1, ZoneType.SUPPORT, 100, 10)
         later = Interaction(99, 1, InteractionState.OPEN, 105, 15)
         origin.interactions.append(later)
-        target = create(history, 2, ZoneType.RESISTANCE, 130, 20)
-        self.assertTrue(all(move.state == InteractionState.CLOSED for move in origin.interactions))
-        self.assertEqual((target.interactions[0].previous_distance,
-                          target.interactions[0].previous_movement_time), (25, 5))
+        before = deepcopy(history)
+        with self.assertRaises(ValueError):
+            create(history, 2, ZoneType.RESISTANCE, 130, 20)
+        self.assertEqual(history, before)
 
     def test_broken_origin_history_is_preserved(self):
         history = []

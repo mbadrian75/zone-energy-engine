@@ -73,6 +73,7 @@ class EngineResultsRepository:
         current_candle_index: int,
         year_candles: int,
         config: EngineConfig,
+        replay_context: dict | None = None,
     ) -> str:
         for name, value in (("run_id", run_id), ("symbol", symbol)):
             if not isinstance(value, str) or not value.strip():
@@ -103,6 +104,8 @@ class EngineResultsRepository:
             "config": asdict(config), "zones": [asdict(zone) for zone in sorted(history, key=lambda item: item.id)],
             "effective_zone_energies": sorted(effective, key=lambda item: item["zone_id"]),
         })
+        if replay_context is not None:
+            document["replay_context"] = _plain(replay_context)
         # Insert once; retrying identical data is safe and cannot replace history.
         self._collection.update_one({"_id": identifier}, {"$setOnInsert": document}, upsert=True)
         stored = self._collection.find_one({"_id": identifier})

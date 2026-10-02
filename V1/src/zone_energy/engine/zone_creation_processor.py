@@ -53,6 +53,12 @@ class ZoneCreationProcessor:
             if zone.creation_index >= reversal.extreme_index:
                 raise ValueError("New zones must be processed chronologically")
 
+        open_moves = [(zone, move) for zone in zones for move in zone.interactions
+                      if move.state == InteractionState.OPEN]
+        if len(open_moves) > 1:
+            raise ValueError("Only one interaction may be OPEN")
+        if open_moves and open_moves[0][0].type == reversal.type:
+            raise ValueError("A new reaction must be opposite to the current movement")
         pending_history = deepcopy(zones)
         new_zone = ZoneFactory.create(
             zone_id, interaction_id, reversal, lower_price, upper_price, previous_zone_id,

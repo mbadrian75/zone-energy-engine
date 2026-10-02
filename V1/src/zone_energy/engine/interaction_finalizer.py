@@ -5,7 +5,7 @@ from zone_energy.engine.interaction_base_energy_calculator import InteractionBas
 from zone_energy.engine.interaction_closer import InteractionCloser
 from zone_energy.engine.movement_energy_calculator import MovementEnergyCalculator
 from zone_energy.engine.previous_move_resolver import PreviousMoveResolver
-from zone_energy.models import Interaction, InteractionState, Zone
+from zone_energy.models import Interaction, InteractionState, Reversal, Zone, ZoneState
 
 
 class InteractionFinalizer:
@@ -23,6 +23,7 @@ class InteractionFinalizer:
         opposite_zone: Zone,
         zones: Iterable[Zone],
         current_candle_index: int,
+        ending_reversal: Reversal | None = None,
     ) -> Interaction:
         if isinstance(current_candle_index, bool) or not isinstance(current_candle_index, int):
             raise ValueError("Current candle index must be an integer")
@@ -41,8 +42,17 @@ class InteractionFinalizer:
             if not interaction.start_index <= record.break_index <= current_candle_index:
                 raise ValueError("Break snapshot lies outside known interaction history")
 
+        endpoint = opposite_zone
+        if ending_reversal is not None:
+            if not interaction.start_index < ending_reversal.extreme_index < ending_reversal.detection_index <= current_candle_index:
+                raise ValueError("Ending reaction must follow the origin and be confirmed")
+            if opposite_zone.type != ending_reversal.type and opposite_zone.state != ZoneState.BROKEN:
+                raise ValueError("Ending reaction must match the opposite zone's role")
+            endpoint = replace(opposite_zone, type=ending_reversal.type,
+                               creation_extreme=ending_reversal.extreme_price,
+                               creation_index=ending_reversal.extreme_index)
         pending = replace(interaction, breaks=list(interaction.breaks))
-        InteractionCloser.close(pending, origin_zone, opposite_zone)
+        InteractionCloser.close(pending, origin_zone, endpoint)
         PreviousMoveResolver.resolve(pending, origin_zone, history)
         if interaction.breaks and (
             interaction.previous_distance != pending.previous_distance

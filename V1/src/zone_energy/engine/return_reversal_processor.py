@@ -44,6 +44,8 @@ class ReturnReversalProcessor:
         )
         if interaction is None:
             return None
+        if any(move.state.value == "open" for item in history for move in item.interactions):
+            raise ValueError("Close the current movement before starting another reaction")
         if any(move.id == interaction_id for item in history for move in item.interactions):
             raise ValueError("Interaction ID already exists in market history")
         PreviousMoveResolver.resolve(interaction, zone, history)
