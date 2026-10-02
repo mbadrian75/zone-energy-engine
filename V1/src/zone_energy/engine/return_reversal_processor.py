@@ -1,3 +1,6 @@
+from math import isfinite
+
+from zone_energy.engine.reversal_detector import ReversalDetector
 from zone_energy.engine.interaction_starter import (
     InteractionStarter,
 )
@@ -23,6 +26,61 @@ class ReturnReversalProcessor:
     New interaction:
         InteractionStarter
     """
+
+    @staticmethod
+    def process_confirmed(
+        zone: Zone,
+        reversal: Reversal,
+        c1: Candle,
+        c2: Candle,
+        c3: Candle,
+        interaction_id: int,
+        current_candle_index: int,
+    ) -> Interaction | None:
+        """Validate C3 confirmation and chronology before starting a reaction.
+
+        Existing interactions retain their origins and energy. Exact replay
+        of an already recorded origin returns None without adding evidence.
+        Previous-move reference assignment is performed separately.
+        """
+        for name, value in (
+            ("interaction_id", interaction_id),
+            ("current_candle_index", current_candle_index),
+            ("extreme_index", reversal.extreme_index),
+            ("detection_index", reversal.detection_index),
+        ):
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"{name} must be a nonnegative integer")
+        if reversal.extreme_index < 1 or reversal.detection_index != reversal.extreme_index + 1:
+            raise ValueError("Reversal must use consecutive C2 and C3 candle indices")
+        if reversal.detection_index > current_candle_index:
+            raise ValueError("C3 confirmation is not yet available")
+        if max(zone.creation_index, zone.created_at_index) > current_candle_index:
+            raise ValueError("Zone is not confirmed at the current candle")
+        if reversal.extreme_index < zone.creation_index:
+            raise ValueError("Reaction starts before the zone exists")
+        if not all(isfinite(value) for candle in (c1, c2, c3)
+                   for value in (candle.open, candle.high, candle.low, candle.close)):
+            raise ValueError("Reversal candle prices must be finite")
+        confirmed = ReversalDetector.detect(
+            c1, c2, c3, reversal.extreme_index - 1,
+            reversal.extreme_index, reversal.detection_index,
+        )
+        if confirmed != reversal:
+            raise ValueError("Supplied reversal does not match the three-candle pattern")
+        if not ReturnReversalDetector.detect(zone, reversal, c1, c2, c3):
+            return None
+        if any(move.start_index == reversal.extreme_index for move in zone.interactions):
+            return None
+        if any(move.id == interaction_id for move in zone.interactions):
+            raise ValueError("Interaction ID already exists on this zone")
+        last_origin = zone.last_interaction_origin_index
+        origins = [move.start_index for move in zone.interactions]
+        if last_origin is not None:
+            origins.append(last_origin)
+        if origins and reversal.extreme_index < max(origins):
+            raise ValueError("Reactions must be processed chronologically")
+        return ReturnReversalProcessor.process(zone, reversal, c1, c2, c3, interaction_id)
 
     @staticmethod
     def process(
