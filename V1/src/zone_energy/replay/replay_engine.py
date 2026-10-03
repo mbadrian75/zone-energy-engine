@@ -35,6 +35,7 @@ class ReplayEngine:
     extreme, not at the zone's original creation point. Ambiguous overlapping
     reaction zones are rejected instead of being selected by iteration order.
     ACTIVE-zone returns take precedence over BROKEN-zone role changes.
+    Among role-change candidates, the latest creation index takes precedence.
     """
 
     def __init__(self, config: EngineConfig, year_candles: int, boundary_service):
@@ -78,6 +79,10 @@ class ReplayEngine:
                 returns = [(zone, role) for zone, role in matches if not role]
                 if returns:
                     matches = returns
+                elif matches:
+                    latest_creation = max(zone.creation_index for zone, _ in matches)
+                    matches = [(zone, role) for zone, role in matches
+                               if zone.creation_index == latest_creation]
                 if len(matches) > 1:
                     details = [
                         "Confirmed reaction overlaps multiple eligible zones",

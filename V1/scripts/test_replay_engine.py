@@ -183,6 +183,49 @@ class ReplayEngineTests(unittest.TestCase):
                     self.assertEqual(len(opened), 1)
                     self.assertEqual(opened[0].zone_id, active.id)
 
+    def test_newest_broken_zone_wins_role_change_and_ties_roll_back(self):
+        from test_role_change_with_reference import scenario
+        from zone_energy.models import ZoneState, ZoneType
+        for kind in (ZoneType.SUPPORT, ZoneType.RESISTANCE):
+            for newest_first in (False, True):
+                for tied in (False, True):
+                    with self.subTest(kind=kind, newest_first=newest_first, tied=tied):
+                        old, source, reversal, pattern = scenario(kind)
+                        newest = deepcopy(old)
+                        newest.id = 3
+                        newest.creation_index = old.creation_index if tied else 17
+                        newest.created_at_index = newest.creation_index + 1
+                        newest.interactions = []
+                        newest.last_interaction_origin_index = None
+                        source.interactions.append(Interaction(
+                            2, source.id, InteractionState.OPEN,
+                            source.creation_extreme, source.creation_index))
+                        engine = self.engine()
+                        engine.state.zones = ([newest, old, source] if newest_first
+                                              else [old, source, newest])
+                        engine.state.next_zone_id = 4
+                        engine.state.next_interaction_id = 3
+                        engine.current_index = 20
+                        engine._recent.extend(pattern[:2])
+                        engine._last_datetime = pattern[1].datetime
+                        before = deepcopy(engine.state)
+                        if tied:
+                            with self.assertRaisesRegex(ValueError, "overlaps multiple"):
+                                engine.process(pattern[2])
+                            self.assertEqual(engine.state, before)
+                            self.assertEqual(engine.current_index, 20)
+                        else:
+                            events = engine.process(pattern[2])
+                            self.assertIn("role_change", events)
+                            opened = [move for zone in engine.state.zones for move in zone.interactions
+                                      if move.state == InteractionState.OPEN]
+                            self.assertEqual(len(opened), 1)
+                            self.assertEqual(opened[0].zone_id, newest.id)
+                            unchanged = next(zone for zone in engine.state.zones if zone.id == old.id)
+                            self.assertEqual(unchanged.state, ZoneState.BROKEN)
+                            self.assertEqual(unchanged.type, kind)
+                            self.assertEqual(unchanged.interactions, old.interactions)
+
     def test_role_change_closes_old_move_and_starts_one_new_move(self):
         from test_role_change_with_reference import scenario
         from zone_energy.models import ZoneType
