@@ -18,6 +18,8 @@ class ReversalDetector:
         c1_index: int,
         c2_index: int,
         c3_index: int,
+        *,
+        previous_type: ZoneType | None = None,
     ) -> Reversal | None:
 
         is_resistance = (
@@ -30,11 +32,16 @@ class ReversalDetector:
             and c2.low < c3.low
         )
 
-        # Ambiguous reversal:
-        # C2 is simultaneously a local high and a local low.
-        # V1 ignores this pattern.
+        # A dual extreme alternates from the previous confirmed reaction.
         if is_resistance and is_support:
-            return None
+            if previous_type is None:
+                return None
+            if previous_type == ZoneType.RESISTANCE:
+                is_resistance = False
+            elif previous_type == ZoneType.SUPPORT:
+                is_support = False
+            else:
+                raise ValueError("Unsupported previous reaction type")
 
         if is_resistance:
             return Reversal(

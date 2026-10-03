@@ -68,7 +68,11 @@ class ReplayEngine:
         events = []
         if len(self._recent) == 2:
             c1, c2 = self._recent
-            reversal = ReversalDetector.detect(c1, c2, candle, index - 2, index - 1, index)
+            previous_type = current[0].type if current else None
+            reversal = ReversalDetector.detect(
+                c1, c2, candle, index - 2, index - 1, index,
+                previous_type=previous_type,
+            )
             if reversal is not None and (current is None or reversal.type != current[0].type):
                 matches = []
                 for zone in pending.zones:
@@ -111,6 +115,7 @@ class ReplayEngine:
                     reaction = processor.process_with_reference(
                         target, reversal, c1, c2, candle, pending.next_interaction_id,
                         index, pending.zones,
+                        previous_type=previous_type,
                     )
                     if reaction is not None:
                         pending.next_interaction_id += 1

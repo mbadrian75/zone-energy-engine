@@ -15,7 +15,7 @@ class ChartTests(unittest.TestCase):
         zone.interactions = [move]
         page = render_chart(bars, [zone], zone, move, 3, 0, 3)
         self.assertIn("O=106 H=115 L=95 C=105", page)
-        self.assertIn("Ambiguous high AND low: ignored at 2", page)
+        self.assertIn("Ambiguous high AND low: no previous reaction at 2", page)
         self.assertIn("zone 19, interaction 45", page)
         self.assertIn("Origin breaks: 3", page)
         self.assertEqual(page.count("<svg "), 1)

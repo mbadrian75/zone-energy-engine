@@ -43,6 +43,7 @@ class RoleChangeProcessor:
         interaction_id: int,
         current_candle_index: int,
         zones: Iterable[Zone],
+        *, previous_type=None,
     ) -> Interaction | None:
         """Confirm and stage the new role and reaction before changing history."""
         history = list(zones)
@@ -56,6 +57,7 @@ class RoleChangeProcessor:
         interaction = ReturnReversalProcessor.process_with_reference(
             pending, reversal, c1, c2, c3, interaction_id,
             current_candle_index, pending_history,
+            previous_type=previous_type,
         )
         if interaction is None:
             return None

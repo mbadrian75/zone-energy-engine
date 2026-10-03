@@ -31,6 +31,7 @@ class ReturnReversalProcessor:
         interaction_id: int,
         current_candle_index: int,
         zones: Iterable[Zone],
+        *, previous_type=None,
     ) -> Interaction | None:
         """Start a confirmed return and assign its incoming reference atomically."""
         history = list(zones)
@@ -41,6 +42,7 @@ class ReturnReversalProcessor:
         pending_zone = replace(zone, interactions=list(zone.interactions))
         interaction = ReturnReversalProcessor.process_confirmed(
             pending_zone, reversal, c1, c2, c3, interaction_id, current_candle_index,
+            previous_type=previous_type,
         )
         if interaction is None:
             return None
@@ -62,6 +64,7 @@ class ReturnReversalProcessor:
         c3: Candle,
         interaction_id: int,
         current_candle_index: int,
+        *, previous_type=None,
     ) -> Interaction | None:
         """Validate C3 confirmation and chronology before starting a reaction.
 
@@ -91,6 +94,7 @@ class ReturnReversalProcessor:
         confirmed = ReversalDetector.detect(
             c1, c2, c3, reversal.extreme_index - 1,
             reversal.extreme_index, reversal.detection_index,
+            previous_type=previous_type,
         )
         if confirmed != reversal:
             raise ValueError("Supplied reversal does not match the three-candle pattern")

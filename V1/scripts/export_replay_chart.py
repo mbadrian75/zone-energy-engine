@@ -8,6 +8,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from zone_energy.engine.reversal_detector import ReversalDetector
+from zone_energy.models import ZoneType
 
 
 def render_chart(candles, zones, origin, move, break_index, first, last):
@@ -60,16 +61,31 @@ def render_chart(candles, zones, origin, move, break_index, first, last):
         pattern = ""
         if 0 < index < len(candles) - 1:
             previous, following = candles[index - 1], candles[index + 1]
-            reversal = ReversalDetector.detect(previous, bar, following, index-1, index, index+1)
+            earlier = [interaction for zone in zones for interaction in zone.interactions
+                       if interaction.start_index < index]
+            previous_type = None
+            if earlier:
+                latest = max(earlier, key=lambda interaction: interaction.start_index)
+                origin_bar = candles[latest.start_index]
+                if latest.start_price == origin_bar.high:
+                    previous_type = ZoneType.RESISTANCE
+                elif latest.start_price == origin_bar.low:
+                    previous_type = ZoneType.SUPPORT
+            reversal = ReversalDetector.detect(
+                previous, bar, following, index-1, index, index+1,
+                previous_type=previous_type,
+            )
             both = bar.high > previous.high and bar.high > following.high and bar.low < previous.low and bar.low < following.low
             if reversal:
                 pattern = f"{reversal.type.value} (confirmed at {index+1})"
+                if both:
+                    pattern += " — dual extreme: opposite previous stored reaction"
                 py = y(reversal.extreme_price)
                 marker_color = "#2563eb" if reversal.type.value == "support" else "#9333ea"
                 parts.append(f'<circle cx="{px}" cy="{py}" r="5" fill="{marker_color}"><title>{escape(pattern)}</title></circle>')
                 label(px + 5, py - 8, "S" if reversal.type.value == "support" else "R", marker_color, 11)
             elif both:
-                pattern = f"Ambiguous high AND low: ignored at {index+1}"
+                pattern = f"Ambiguous high AND low: no previous reaction at {index+1}"
                 label(px - 4, y(bar.low) + 18, "×", "#d97706", 20)
         stored = "; ".join(f"zone {z}, interaction {i}" for z, i in accepted.get(index, []))
         if stored:
@@ -89,9 +105,11 @@ def render_chart(candles, zones, origin, move, break_index, first, last):
             'td,th{border:1px solid #cbd5e1;padding:6px}tr:nth-child(even){background:white}</style>'
             '<h2>کندل‌های واقعی بین واکنش و شکست زون مبدأ</h2>'
             '<p>دایره آبی S: کف سه کندلی؛ دایره بنفش R: سقف سه کندلی. تأیید در کندل بعد انجام می‌شود. '
-            'علامت نارنجی ×: کندل هم‌زمان سقف و کف بوده و طبق منطق فعلی نادیده گرفته شده است. '
+            'در کندل هم‌زمان سقف و کف، نوع مخالف واکنش قبلی انتخاب می‌شود. '
+            'علامت نارنجی ×: برای انتخاب نوع، واکنش قبلی در دسترس نیست. '
             'مربع سیاه: شروع Interaction ثبت‌شده در Replay.</p>'
-            '<p>وجود الگوی سه کندلی به‌تنهایی به معنی واکنش پذیرفته‌شده به زون نیست. '
+            '<p>الگوها با قاعده فعلی و واکنش قبلی موجود در checkpoint محاسبه می‌شوند؛ '
+            'مربع‌های سیاه، تاریخچه ثبت‌شده همان اجرا هستند. وجود الگوی سه کندلی به‌تنهایی به معنی واکنش پذیرفته‌شده به زون نیست. '
             'تنها محدوده زون مبدأ نمایش داده شده؛ برای دانستن تماس با زون‌های دیگر باید آن‌ها را جداگانه بررسی کرد. '
             'برای دیدن اطلاعات کندل، نشانگر را روی آن نگه دارید.</p>'
             '<div class="chart" dir="ltr">' + ''.join(parts) + '</div>'
