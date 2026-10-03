@@ -34,6 +34,7 @@ class ReplayEngine:
     external price sides. Existing-zone reactions close the move at their new
     extreme, not at the zone's original creation point. Ambiguous overlapping
     reaction zones are rejected instead of being selected by iteration order.
+    ACTIVE-zone returns take precedence over BROKEN-zone role changes.
     """
 
     def __init__(self, config: EngineConfig, year_candles: int, boundary_service):
@@ -74,6 +75,9 @@ class ReplayEngine:
                     returned = ReturnReversalDetector.detect(zone, reversal, c1, c2, candle)
                     if role or returned:
                         matches.append((zone, role))
+                returns = [(zone, role) for zone, role in matches if not role]
+                if returns:
+                    matches = returns
                 if len(matches) > 1:
                     details = [
                         "Confirmed reaction overlaps multiple eligible zones",
