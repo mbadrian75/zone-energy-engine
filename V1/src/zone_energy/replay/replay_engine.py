@@ -75,7 +75,24 @@ class ReplayEngine:
                     if role or returned:
                         matches.append((zone, role))
                 if len(matches) > 1:
-                    raise ValueError("Confirmed reaction overlaps multiple eligible zones")
+                    details = [
+                        "Confirmed reaction overlaps multiple eligible zones",
+                        f"Confirmation: index={index}, datetime={candle.datetime.isoformat()}",
+                        f"Reaction: type={reversal.type.value}, extreme={reversal.extreme_price}, "
+                        f"extreme_index={reversal.extreme_index}",
+                    ]
+                    for zone, role in matches:
+                        contacts = [name for name, bar in (("C1", c1), ("C2", c2), ("C3", candle))
+                                    if bar.high >= zone.lower_price and bar.low <= zone.upper_price]
+                        details.append(
+                            f"Candidate: id={zone.id}, type={zone.type.value}, state={zone.state.value}, "
+                            f"range=[{zone.lower_price}, {zone.upper_price}], "
+                            f"creation_index={zone.creation_index}, "
+                            f"reaction={'role_change' if role else 'return'}, "
+                            f"contact={','.join(contacts)}, "
+                            f"contains_extreme={zone.lower_price <= reversal.extreme_price <= zone.upper_price}"
+                        )
+                    raise ValueError("\n".join(details))
                 if matches:
                     target, role = matches[0]
                     if current is not None:
