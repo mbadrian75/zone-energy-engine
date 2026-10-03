@@ -121,6 +121,41 @@ class ReplayEngineTests(unittest.TestCase):
             runner.run(start=datetime(2025, 1, 1), end=datetime(2025, 2, 1), run_id="empty")
         self.assertEqual(client.collection.documents, {})
 
+    def test_latest_active_return_wins_regardless_of_zone_order(self):
+        from test_role_change_with_reference import scenario
+        from zone_energy.models import ZoneState, ZoneType
+        for kind in (ZoneType.SUPPORT, ZoneType.RESISTANCE):
+            for newest_first in (False, True):
+                with self.subTest(kind=kind, newest_first=newest_first):
+                    old, source, reversal, pattern = scenario(kind)
+                    old.type = reversal.type
+                    old.state = ZoneState.ACTIVE
+                    old.interactions = []
+                    old.last_interaction_origin_index = None
+                    newest = deepcopy(old)
+                    newest.id = 3
+                    newest.creation_index = 17
+                    newest.created_at_index = 18
+                    source.interactions.append(Interaction(
+                        2, source.id, InteractionState.OPEN,
+                        source.creation_extreme, source.creation_index))
+                    engine = self.engine()
+                    engine.state.zones = ([newest, old, source] if newest_first
+                                          else [old, source, newest])
+                    engine.state.next_zone_id = 4
+                    engine.state.next_interaction_id = 3
+                    engine.current_index = 20
+                    engine._recent.extend(pattern[:2])
+                    engine._last_datetime = pattern[1].datetime
+                    events = engine.process(pattern[2])
+                    self.assertIn("return_reaction", events)
+                    opened = [move for zone in engine.state.zones for move in zone.interactions
+                              if move.state == InteractionState.OPEN]
+                    self.assertEqual(len(opened), 1)
+                    self.assertEqual(opened[0].zone_id, newest.id)
+                    unchanged = next(zone for zone in engine.state.zones if zone.id == old.id)
+                    self.assertEqual(unchanged.interactions, [])
+
     def test_ambiguous_reaction_rolls_back_current_candle(self):
         engine = self.engine()
         for candle in candles()[:7]:
