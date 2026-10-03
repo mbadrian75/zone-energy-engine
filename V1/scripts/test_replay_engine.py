@@ -52,12 +52,14 @@ class ReplayEngineTests(unittest.TestCase):
             opened = [move for zone in engine.state.zones for move in zone.interactions
                       if move.state == InteractionState.OPEN]
             self.assertEqual(len(opened), 1)
-        self.assertEqual(len(engine.state.zones), 2)
-        support, resistance = engine.state.zones
+        self.assertEqual(len(engine.state.zones), 3)
+        support, resistance, new_support = engine.state.zones
         self.assertEqual(resistance.interactions[0].end_index, 5)
         self.assertEqual(resistance.interactions[0].end_price, 95)
         self.assertAlmostEqual(resistance.interactions[0].base_energy, 35 / 30)
-        self.assertEqual(support.interactions[-1].start_index, 5)
+        # The new low (95) is outside the original support [100, 110].
+        self.assertEqual(len(support.interactions), 1)
+        self.assertEqual(new_support.interactions[-1].start_index, 5)
 
     def test_break_belongs_to_single_current_reaction(self):
         engine = self.engine()
@@ -67,9 +69,8 @@ class ReplayEngineTests(unittest.TestCase):
                   if move.state == InteractionState.OPEN]
         self.assertEqual(len(opened), 1)
         zone, move = opened[0]
-        self.assertEqual(len(move.breaks), 1)
-        self.assertEqual(move.breaks[0].broken_zone_id, 1)
-        self.assertEqual(move.breaks[0].break_index, 7)
+        self.assertEqual({record.broken_zone_id for record in move.breaks}, {1, 3})
+        self.assertTrue(all(record.break_index == 7 for record in move.breaks))
         self.assertEqual(zone.id, 2)
 
     def test_checkpoint_failure_leaves_candle_uncommitted(self):

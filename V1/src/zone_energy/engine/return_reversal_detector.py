@@ -1,12 +1,8 @@
-from zone_energy.engine.zone_contact_detector import (
-    ZoneContactDetector,
-)
 from zone_energy.models import (
     Candle,
     Reversal,
     Zone,
     ZoneState,
-    ZoneType,
 )
 
 
@@ -33,11 +29,8 @@ class ReturnReversalDetector:
         if reversal.type != zone.type:
             return False
 
-        has_contact = (
-            ZoneContactDetector.has_contact(zone, c1)
-            or ZoneContactDetector.has_contact(zone, c2)
-            or ZoneContactDetector.has_contact(zone, c3)
-        )
+        # Candle contact alone does not identify the reacting zone.
+        has_contact = zone.lower_price <= reversal.extreme_price <= zone.upper_price
 
         if not has_contact:
             return False

@@ -29,26 +29,8 @@ class RoleChangeDetector:
         if zone.state != ZoneState.BROKEN:
             return False
 
-        pattern_high = max(
-            c1.high,
-            c2.high,
-            c3.high,
-        )
-
-        pattern_low = min(
-            c1.low,
-            c2.low,
-            c3.low,
-        )
-
-        # The full three-candle reversal pattern
-        # must overlap the zone.
-        has_pattern_overlap = (
-            pattern_high >= zone.lower_price
-            and pattern_low <= zone.upper_price
-        )
-
-        if not has_pattern_overlap:
+        # Attribute the reaction to its C2 extreme, not the pattern's range.
+        if not zone.lower_price <= reversal.extreme_price <= zone.upper_price:
             return False
 
         # Broken SUPPORT:
