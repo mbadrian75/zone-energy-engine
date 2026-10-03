@@ -5,13 +5,14 @@ import json
 import os
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from zone_energy.engine.reversal_detector import ReversalDetector
 from zone_energy.models import ZoneType
 
 
-def render_chart(candles, zones, origin, move, break_index, first, last):
+def render_chart(candles, zones, origin, move, break_index, first, last, invalidated_reactions=()):
     """Display raw patterns separately from reactions actually stored by replay."""
     if not (0 <= first <= move.start_index <= break_index <= last < len(candles)):
         raise ValueError("Chart window must contain the interaction start and break")
@@ -88,7 +89,11 @@ def render_chart(candles, zones, origin, move, break_index, first, last):
                 pattern = f"Ambiguous high AND low: no previous reaction at {index+1}"
                 label(px - 4, y(bar.low) + 18, "×", "#d97706", 20)
         stored = "; ".join(f"zone {z}, interaction {i}" for z, i in accepted.get(index, []))
-        if stored:
+        invalid = [reaction for reaction in invalidated_reactions if reaction["reaction_index"] == index]
+        for reaction in invalid:
+            stored += ("; " if stored else "") + f"INVALIDATED interaction {reaction['interaction_id']} at break {reaction['break_index']}"
+            label(px - 7, y(bar.high) - 23, "×", "#b91c1c", 24)
+        if accepted.get(index):
             parts.append(f'<rect x="{px-7}" y="{y(bar.low)+23}" width="14" height="14" fill="#0f172a"><title>{escape(stored)}</title></rect>')
         rows.append(f'<tr><td>{index}</td><td>{escape(bar.datetime.isoformat())}</td>'
                     f'<td>{bar.open}</td><td>{bar.high}</td><td>{bar.low}</td><td>{bar.close}</td>'
@@ -107,7 +112,8 @@ def render_chart(candles, zones, origin, move, break_index, first, last):
             '<p>دایره آبی S: کف سه کندلی؛ دایره بنفش R: سقف سه کندلی. تأیید در کندل بعد انجام می‌شود. '
             'در کندل هم‌زمان سقف و کف، نوع مخالف واکنش قبلی انتخاب می‌شود. '
             'علامت نارنجی ×: برای انتخاب نوع، واکنش قبلی در دسترس نیست. '
-            'مربع سیاه: شروع Interaction ثبت‌شده در Replay.</p>'
+            'مربع سیاه: شروع Interaction معتبر ثبت‌شده در Replay. '
+            '× قرمز: واکنشی که پس از شکست زون مبدأ نامعتبر شده است.</p>'
             '<p>الگوها با قاعده فعلی و واکنش قبلی موجود در checkpoint محاسبه می‌شوند؛ '
             'مربع‌های سیاه، تاریخچه ثبت‌شده همان اجرا هستند. وجود الگوی سه کندلی به‌تنهایی به معنی واکنش پذیرفته‌شده به زون نیست. '
             'تنها محدوده زون مبدأ نمایش داده شده؛ برای دانستن تماس با زون‌های دیگر باید آن‌ها را جداگانه بررسی کرد. '
@@ -142,6 +148,11 @@ def main():
             raise ValueError("Checkpoint not found")
         zones = results.load_zones(identifier)
         matches = [(zone, move) for zone in zones for move in zone.interactions if move.id == args.interaction_id]
+        invalid = [reaction for reaction in document["replay_context"].get("invalidated_reactions", [])
+                   if reaction["interaction_id"] == args.interaction_id]
+        if not matches and len(invalid) == 1:
+            zone = next(zone for zone in zones if zone.id == invalid[0]["zone_id"])
+            matches = [(zone, SimpleNamespace(**invalid[0]["invalid_interaction"]))]
         if len(matches) != 1:
             raise ValueError("Interaction not uniquely found")
         origin, move = matches[0]
@@ -151,11 +162,15 @@ def main():
             raise ValueError("Candle indexing no longer matches checkpoint")
         events = [event for event in context["unattributed_breaks"]
                   if event["zone_id"] == origin.id and event["candle_index"] == args.break_index]
+        if not events:
+            events = [{"close":reaction["break_close"]} for reaction in invalid
+                      if reaction["break_index"]==args.break_index]
         if len(events) != 1 or bars[args.break_index].close != events[0]["close"]:
             raise ValueError("Origin break does not match the selected checkpoint/candles")
         first = max(0, move.start_index - args.padding)
         last = min(args.checkpoint_index, args.break_index + args.padding)
-        html = render_chart(bars, zones, origin, move, args.break_index, first, last)
+        html = render_chart(bars, zones, origin, move, args.break_index, first, last,
+                            context.get("invalidated_reactions", []))
         output = Path(args.output).resolve()
         output.write_text(html, encoding="utf-8")
         print(f"Zone: {origin.id}; interaction: {move.id}; start: {move.start_index}; break: {args.break_index}")

@@ -68,8 +68,23 @@ reversals do not start concurrent moves. Role changes use the external price
 side saved before the current candle. Reactions are confirmed before current
 candle breaks; all breaks in that batch share a pre-break snapshot.
 
-Overlapping eligible reaction zones are reported as an ambiguity and abort the
-current candle without saving partial state. Physical breaks lacking an eligible
+ACTIVE-zone returns precede role changes; within either group, the latest
+creation index wins. Tied candidates abort the candle without partial state.
+Dual high/low patterns select the opposite of the current reaction type; without
+a previous reaction they remain unresolved.
+
+If the current origin zone breaks before a confirmed opposite reaction, only
+its latest reaction is invalidated. Replay restores the preceding origin and
+reconstructs candles from before the invalid reaction, including intervening
+break snapshots. The zone remains present and becomes BROKEN, with its earlier
+valid interaction energies preserved. The discarded reaction is retained in
+`replay_context.invalidated_reactions`, outside valid energy sums. If there is
+no preceding origin, the break remains unattributed. Older checkpoint documents
+are unchanged; corrections appear in subsequent checkpoints. This processing
+keeps in-memory reaction seeds and is currently available for fresh replays,
+not for checkpoint resume. Run a fresh replay after changing these rules.
+
+Physical breaks lacking an eligible
 confirmed origin are retained under `replay_context.unattributed_breaks`; no
 origin energy is fabricated. Missing M15 boundaries skip creation of that zone.
 

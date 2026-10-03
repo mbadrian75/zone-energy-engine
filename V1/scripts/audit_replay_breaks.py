@@ -16,7 +16,13 @@ from zone_energy.replay.replay_engine import ReplayEngine
 def inspect(engine, pending, index, candle):
     current = engine._current(pending)
     rows = []
-    for event in pending.unattributed_breaks[len(engine.state.unattributed_breaks):]:
+    previous_keys = {(event["zone_id"], event["candle_index"]) for event in engine.state.unattributed_breaks}
+    for event in pending.unattributed_breaks:
+        if (event["zone_id"], event["candle_index"]) in previous_keys:
+            continue
+        if event["candle_index"] != index:
+            rows.append({**event, "diagnosis": "historical_event_recomputed_after_invalidation"})
+            continue
         if current is None:
             reason = "no_open_interaction"
         elif current[0].id == event["zone_id"]:
@@ -55,21 +61,32 @@ def main():
         values["timeframe"] = EngineTimeframe(values["timeframe"])
         config = EngineConfig(**values)
         engine = ReplayEngine(config, document["year_candles"], ZoneBoundaryService(market, config))
-        rows = []
+        rows = {}
+        def collect(pending, index, bar):
+            retained = {(event["zone_id"], event["candle_index"]) for event in pending.unattributed_breaks}
+            for key in list(rows):
+                if key not in retained:
+                    del rows[key]
+            for row in inspect(engine, pending, index, bar):
+                rows[(row["zone_id"], row["candle_index"])] = row
         for candle in market.stream_candles(args.timeframe, context["start"], context["end"]):
-            engine.process(candle, before_commit=lambda pending, index, bar:
-                           rows.extend(inspect(engine, pending, index, bar)))
+            engine.process(candle, before_commit=collect)
             if engine.current_index == args.index:
                 break
         if (engine.current_index != args.index
                 or engine.state.zones != results.load_zones(identifier)
                 or engine.state.unattributed_breaks != context["unattributed_breaks"]
+                or engine.state.invalidated_reactions != context.get("invalidated_reactions", [])
                 or engine._last_datetime != context["candle_datetime"]):
             raise ValueError("Reconstructed history differs from checkpoint; report withheld")
         print("Checkpoint reconstruction: MATCH")
         print(f"Unattributed breaks: {len(rows)}")
-        for row in rows:
+        for row in sorted(rows.values(), key=lambda row: (row["candle_index"], row["zone_id"])):
             print(json.dumps(row, ensure_ascii=False))
+        print(f"Invalidated reactions: {len(engine.state.invalidated_reactions)}")
+        for reaction in engine.state.invalidated_reactions:
+            report = {key: value for key, value in reaction.items() if key != "invalid_interaction"}
+            print(json.dumps(report, ensure_ascii=False, default=str))
     finally:
         results.close()
         market.close()

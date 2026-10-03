@@ -29,6 +29,7 @@ class ReplayRunner:
                 year_candles=self.engine.year_candles, config=self.engine.config,
                 replay_context={"start": start, "end": end, "candle_datetime": candle.datetime,
                                 "unattributed_breaks": state.unattributed_breaks,
+                                "invalidated_reactions": state.invalidated_reactions,
                                 "next_zone_id": state.next_zone_id,
                                 "next_interaction_id": state.next_interaction_id},
             )
@@ -48,4 +49,5 @@ class ReplayRunner:
         return {"candles": self.engine.current_index + 1,
                 "zones": len(self.engine.state.zones),
                 "unattributed_breaks": len(self.engine.state.unattributed_breaks),
+                "invalidated_reactions": len(self.engine.state.invalidated_reactions),
                 "last_checkpoint": last_checkpoint}

@@ -1,6 +1,6 @@
 from collections import deque
-from copy import deepcopy
-from dataclasses import dataclass
+from copy import copy, deepcopy
+from dataclasses import asdict, dataclass, field
 from math import isfinite
 
 from zone_energy.config import EngineConfig
@@ -25,6 +25,15 @@ class ReplayState:
     unattributed_breaks: list
     next_zone_id: int = 1
     next_interaction_id: int = 1
+    invalidated_reactions: list = field(default_factory=list)
+
+
+class _OriginBroken(Exception):
+    def __init__(self, zone, interaction, index, candle):
+        self.zone = deepcopy(zone)
+        self.interaction = deepcopy(interaction)
+        self.index = index
+        self.candle = candle
 
 
 class ReplayEngine:
@@ -48,6 +57,9 @@ class ReplayEngine:
         self._recent = deque(maxlen=2)
         self._last_datetime = None
         self._breaks = BreakProcessor(config)
+        self._reaction_seed = None
+        self._reaction_window = ()
+        self._suppressed = {}
 
     @staticmethod
     def _current(state):
@@ -58,6 +70,60 @@ class ReplayEngine:
         return candidates[0] if candidates else None
 
     def process(self, candle, before_commit=None):
+        """Stage a candle, including any invalidation replay, before checkpointing.
+
+        Retain an immutable seed before each new reaction. If its origin breaks,
+        replay that window without that reaction, preserving the zone and scoring
+        every intervening break against its corrected historical snapshot.
+        """
+        staged = copy(self)
+        staged._recent = deque(self._recent, maxlen=2)
+        previous = self._current(self.state)
+        try:
+            events = staged._process_once(candle)
+        except _OriginBroken as broken:
+            if self._reaction_seed is None:
+                raise ValueError("Cannot invalidate an origin without its reaction seed") from broken
+            staged = copy(self._reaction_seed)
+            staged._recent = deque(staged._recent, maxlen=2)
+            staged.state = deepcopy(staged.state)
+            staged.state.invalidated_reactions = deepcopy(self.state.invalidated_reactions)
+            key = (broken.interaction.start_index, broken.zone.type)
+            if key in self._suppressed:
+                raise ValueError("Previously invalidated reaction became an origin again") from broken
+            staged._suppressed = {**self._suppressed, key: broken}
+            restored = self._current(staged.state)
+            staged.state.invalidated_reactions.append({
+                "zone_id": broken.zone.id, "interaction_id": broken.interaction.id,
+                "reaction_index": broken.interaction.start_index,
+                "reaction_type": broken.zone.type.value,
+                "break_index": broken.index,
+                "break_datetime": broken.candle.datetime,
+                "break_close": broken.candle.close,
+                "restored_origin_zone_id": restored[0].id if restored else None,
+                "restored_interaction_id": restored[1].id if restored else None,
+                "reason": "origin_broken_before_opposite_reaction",
+                "invalid_interaction": asdict(broken.interaction),
+            })
+            events = []
+            for bar in self._reaction_window + (candle,):
+                events = staged.process(bar)
+            events = ["reaction_invalidated", *events]
+        else:
+            current = self._current(staged.state)
+            if current is not None and (previous is None or current[1].id != previous[1].id):
+                seed = copy(self)
+                seed._recent = deque(self._recent, maxlen=2)
+                staged._reaction_seed = seed
+                staged._reaction_window = (candle,)
+            elif staged._reaction_seed is not None:
+                staged._reaction_window = self._reaction_window + (candle,)
+        if before_commit is not None:
+            before_commit(staged.state, staged.current_index, candle)
+        self.__dict__.update(staged.__dict__)
+        return events
+
+    def _process_once(self, candle):
         if not all(isfinite(value) for value in (candle.open, candle.high, candle.low, candle.close)):
             raise ValueError("Replay candle prices must be finite")
         if self._last_datetime is not None and candle.datetime <= self._last_datetime:
@@ -73,7 +139,25 @@ class ReplayEngine:
                 c1, c2, candle, index - 2, index - 1, index,
                 previous_type=previous_type,
             )
-            if reversal is not None and (current is None or reversal.type != current[0].type):
+            suppressed = self._suppressed.get((reversal.extreme_index, reversal.type)) if reversal else None
+            if suppressed is not None:
+                # Keep the zone, its prior interactions and its role at the break;
+                # discard only the provisional reaction and reserve its IDs.
+                target = next((zone for zone in pending.zones if zone.id == suppressed.zone.id), None)
+                if target is None:
+                    target = deepcopy(suppressed.zone)
+                    target.interactions = [move for move in target.interactions
+                                           if move.id != suppressed.interaction.id]
+                    target.last_external_price_side = None
+                    pending.zones.append(target)
+                target.type = suppressed.zone.type
+                target.state = ZoneState.ACTIVE
+                target.last_interaction_origin_index = max(
+                    (move.start_index for move in target.interactions), default=None)
+                pending.next_zone_id = max(pending.next_zone_id, target.id + 1)
+                pending.next_interaction_id = max(pending.next_interaction_id, suppressed.interaction.id + 1)
+                events.append("invalid_reaction_skipped")
+            elif reversal is not None and (current is None or reversal.type != current[0].type):
                 matches = []
                 for zone in pending.zones:
                     role = RoleChangeDetector.detect(zone, reversal, c1, c2, candle)
@@ -135,6 +219,8 @@ class ReplayEngine:
                         events.append("missing_boundary")
 
         current = self._current(pending)
+        if current is not None and BreakDetector.is_broken(current[0], candle):
+            raise _OriginBroken(current[0], current[1], index, candle)
         aligns = current is not None and (
             (current[0].type == ZoneType.SUPPORT and candle.is_bullish)
             or (current[0].type == ZoneType.RESISTANCE and candle.is_bearish)
@@ -156,8 +242,6 @@ class ReplayEngine:
                 events.append("unattributed_break")
             ZonePriceSideUpdater.update(zone, PriceSideDetector.detect(zone, candle.close))
         self._current(pending)
-        if before_commit is not None:
-            before_commit(pending, index, candle)
         self.state = pending
         self.current_index = index
         self._last_datetime = candle.datetime

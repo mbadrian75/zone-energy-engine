@@ -181,7 +181,9 @@ class ReplayEngineTests(unittest.TestCase):
         engine.process(Candle(items[-1].datetime + timedelta(hours=1), 98, 99, 90, 95, 0))
         self.assertEqual(engine.state.zones[0].state.value, "broken")
         self.assertEqual(len(engine.state.unattributed_breaks), 1)
-        self.assertEqual(engine.state.zones[0].interactions[0].breaks, [])
+        self.assertEqual(engine.state.zones[0].interactions, [])
+        self.assertEqual(len(engine.state.invalidated_reactions), 1)
+        self.assertIsNone(engine.state.invalidated_reactions[0]["restored_origin_zone_id"])
 
     def test_active_return_precedes_role_change_regardless_of_zone_order(self):
         from test_role_change_with_reference import scenario
