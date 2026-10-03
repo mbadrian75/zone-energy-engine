@@ -82,6 +82,8 @@ def main():
                 or engine.state.zones != results.load_zones(identifier)
                 or engine.state.unattributed_breaks != context["unattributed_breaks"]
                 or engine.state.invalidated_reactions != context.get("invalidated_reactions", [])
+                or engine.state.pending_c2_breaks != context.get("pending_c2_breaks", [])
+                or engine.state.confirmed_c2_breaks != context.get("confirmed_c2_breaks", [])
                 or engine._last_datetime != context["candle_datetime"]):
             raise ValueError("Reconstructed history differs from checkpoint; report withheld")
         print("Checkpoint reconstruction: MATCH")
@@ -100,6 +102,9 @@ def main():
         for reaction in engine.state.invalidated_reactions:
             report = {key: value for key, value in reaction.items() if key != "invalid_interaction"}
             print(json.dumps(report, ensure_ascii=False, default=str))
+        print(f"Confirmed outgoing C2 breaks: {len(engine.state.confirmed_c2_breaks)}")
+        for report in engine.state.confirmed_c2_breaks:
+            print(json.dumps(report, ensure_ascii=False))
     finally:
         results.close()
         market.close()

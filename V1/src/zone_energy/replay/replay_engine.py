@@ -6,6 +6,8 @@ from math import isfinite
 from zone_energy.config import EngineConfig
 from zone_energy.engine.break_detector import BreakDetector
 from zone_energy.engine.break_processor import BreakProcessor
+from zone_energy.engine.break_record_factory import BreakRecordFactory
+from zone_energy.engine.market_energy_snapshot import MarketEnergySnapshotCalculator
 from zone_energy.engine.interaction_finalizer import InteractionFinalizer
 from zone_energy.engine.interaction_time_decay_calculator import InteractionTimeDecayCalculator
 from zone_energy.engine.price_side_detector import PriceSideDetector
@@ -16,7 +18,7 @@ from zone_energy.engine.role_change_detector import RoleChangeDetector
 from zone_energy.engine.role_change_processor import RoleChangeProcessor
 from zone_energy.engine.zone_creation_processor import ZoneCreationProcessor
 from zone_energy.engine.zone_price_side_updater import ZonePriceSideUpdater
-from zone_energy.models import InteractionState, ZoneState, ZoneType
+from zone_energy.models import InteractionState, Zone, ZoneState, ZoneType
 
 
 @dataclass
@@ -26,6 +28,8 @@ class ReplayState:
     next_zone_id: int = 1
     next_interaction_id: int = 1
     invalidated_reactions: list = field(default_factory=list)
+    pending_c2_breaks: list = field(default_factory=list)
+    confirmed_c2_breaks: list = field(default_factory=list)
 
 
 class _OriginBroken(Exception):
@@ -57,6 +61,8 @@ class ReplayEngine:
         self._recent = deque(maxlen=2)
         self._last_datetime = None
         self._breaks = BreakProcessor(config)
+        self._snapshots = MarketEnergySnapshotCalculator(config)
+        self._break_records = BreakRecordFactory(config)
         self._reaction_seed = None
         self._reaction_window = ()
         self._suppressed = {}
@@ -132,6 +138,7 @@ class ReplayEngine:
         pending = deepcopy(self.state)
         current = self._current(pending)
         events = []
+        new_reaction = None
         if len(self._recent) == 2:
             c1, c2 = self._recent
             previous_type = current[0].type if current else None
@@ -202,25 +209,33 @@ class ReplayEngine:
                         previous_type=previous_type,
                     )
                     if reaction is not None:
+                        new_reaction = (target, reaction)
                         pending.next_interaction_id += 1
                         events.append("role_change" if role else "return_reaction")
                 else:
                     boundary = self.boundary_service.resolve(reversal, c2)
                     if boundary is not None:
-                        ZoneCreationProcessor.process(
+                        created = ZoneCreationProcessor.process(
                             pending.zones, pending.next_zone_id, pending.next_interaction_id,
                             reversal, *boundary, index,
                             previous_zone_id=current[0].id if current else None,
                         )
+                        new_reaction = (created, created.interactions[-1])
                         pending.next_zone_id += 1
                         pending.next_interaction_id += 1
                         events.append("zone_created")
                     else:
                         events.append("missing_boundary")
 
+        if new_reaction is not None:
+            if self._confirm_c2_breaks(pending, *new_reaction, c2, index):
+                events.append("c2_break_confirmed")
+        # A C2 candidate has exactly one chance: the next candle must confirm it.
+        pending.pending_c2_breaks = []
         current = self._current(pending)
         if current is not None and BreakDetector.is_broken(current[0], candle):
             raise _OriginBroken(current[0], current[1], index, candle)
+        pre_break = self._snapshots.capture(pending.zones, index, self.year_candles)
         aligns = current is not None and (
             (current[0].type == ZoneType.SUPPORT and candle.is_bullish)
             or (current[0].type == ZoneType.RESISTANCE and candle.is_bearish)
@@ -238,6 +253,19 @@ class ReplayEngine:
                     "zone_id": zone.id, "candle_index": index,
                     "close": candle.close, "reason": "no_confirmed_origin",
                 })
+                energy, median = pre_break.reference_for_break(zone.id)
+                pending.pending_c2_breaks.append({
+                    "break_index": index, "datetime": candle.datetime,
+                    "open": candle.open, "high": candle.high,
+                    "low": candle.low, "close": candle.close,
+                    "broken_zone_energy_at_break": energy,
+                    "median_active_zone_energy_at_break": median,
+                    "zone": {"id": zone.id, "type": zone.type.value,
+                             "lower_price": zone.lower_price, "upper_price": zone.upper_price,
+                             "creation_extreme": zone.creation_extreme,
+                             "creation_index": zone.creation_index,
+                             "created_at_index": zone.created_at_index},
+                })
                 zone.state = ZoneState.BROKEN
                 events.append("unattributed_break")
             ZonePriceSideUpdater.update(zone, PriceSideDetector.detect(zone, candle.close))
@@ -247,3 +275,52 @@ class ReplayEngine:
         self._last_datetime = candle.datetime
         self._recent.append(candle)
         return events
+
+    def _confirm_c2_breaks(self, state, origin, interaction, c2, confirmation_index):
+        """Credit outgoing movement using the immutable old-role C2 references.
+
+        The new origin may have the same zone ID as the broken old role.
+        Never use the zone's new role or C3 energies to reconstruct this record.
+        """
+        aligns = ((origin.type == ZoneType.SUPPORT and c2.is_bullish)
+                  or (origin.type == ZoneType.RESISTANCE and c2.is_bearish))
+        if not aligns:
+            return False
+        records, confirmed, keys = [], [], set()
+        for saved in state.pending_c2_breaks:
+            if saved["break_index"] != interaction.start_index or saved["break_index"] != confirmation_index - 1:
+                continue
+            if (saved["datetime"], saved["open"], saved["high"], saved["low"], saved["close"]) != (
+                    c2.datetime, c2.open, c2.high, c2.low, c2.close):
+                raise ValueError("Pending C2 snapshot does not match the confirmed candle")
+            values = dict(saved["zone"])
+            values["type"] = ZoneType(values["type"])
+            old_role = Zone(state=ZoneState.ACTIVE, **values)
+            if old_role.type == origin.type or not BreakDetector.is_broken(old_role, c2):
+                continue
+            key = (old_role.id, saved["break_index"])
+            if key in keys or any(
+                (record.broken_zone_id, record.break_index) == key
+                for zone in state.zones for move in zone.interactions for record in move.breaks
+            ):
+                raise ValueError("C2 break would be counted more than once")
+            record = self._break_records.create(
+                old_role, interaction, c2, saved["break_index"],
+                saved["broken_zone_energy_at_break"], saved["median_active_zone_energy_at_break"],
+            )
+            records.append(record)
+            keys.add(key)
+            confirmed.append({
+                "broken_zone_id": old_role.id, "broken_zone_type": old_role.type.value,
+                "break_index": record.break_index, "confirmation_index": confirmation_index,
+                "origin_zone_id": origin.id, "origin_zone_type": origin.type.value,
+                "interaction_id": interaction.id, "same_zone_role_change": old_role.id == origin.id,
+                "broken_zone_energy_at_break": record.broken_zone_energy_at_break,
+                "median_active_zone_energy_at_break": record.median_active_zone_energy_at_break,
+                "break_evidence": record.break_evidence,
+            })
+        interaction.breaks.extend(records)
+        state.confirmed_c2_breaks.extend(confirmed)
+        state.unattributed_breaks = [event for event in state.unattributed_breaks
+                                    if (event["zone_id"], event["candle_index"]) not in keys]
+        return bool(records)

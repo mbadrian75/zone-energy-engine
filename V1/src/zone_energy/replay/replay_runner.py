@@ -30,6 +30,8 @@ class ReplayRunner:
                 replay_context={"start": start, "end": end, "candle_datetime": candle.datetime,
                                 "unattributed_breaks": state.unattributed_breaks,
                                 "invalidated_reactions": state.invalidated_reactions,
+                                "pending_c2_breaks": state.pending_c2_breaks,
+                                "confirmed_c2_breaks": state.confirmed_c2_breaks,
                                 "next_zone_id": state.next_zone_id,
                                 "next_interaction_id": state.next_interaction_id},
             )
@@ -50,4 +52,5 @@ class ReplayRunner:
                 "zones": len(self.engine.state.zones),
                 "unattributed_breaks": len(self.engine.state.unattributed_breaks),
                 "invalidated_reactions": len(self.engine.state.invalidated_reactions),
+                "confirmed_c2_breaks": len(self.engine.state.confirmed_c2_breaks),
                 "last_checkpoint": last_checkpoint}

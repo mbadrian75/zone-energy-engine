@@ -88,6 +88,17 @@ Physical breaks lacking an eligible
 confirmed origin are retained under `replay_context.unattributed_breaks`; no
 origin energy is fabricated. Missing M15 boundaries skip creation of that zone.
 
+For an unattributed break on C2, retain the old zone role and the shared pre-break
+energy/median snapshot in `replay_context.pending_c2_breaks`. If the next C3
+confirms an accepted opposite reaction on that C2 and the break direction agrees
+with its outgoing movement, attach the break to that new interaction. Its break
+time is zero; barrier energy uses the original C2 snapshot, not recalculated C3
+values. No evidence is credited before C3. Old role and new origin can have the
+same zone ID; `confirmed_c2_breaks` identifies each role separately. If no valid
+reaction is confirmed, the event remains unattributed. Invalidation replay also
+removes credits belonging to a discarded reaction. Saved earlier checkpoints
+are not overwritten; start a new run to apply this policy.
+
 Periodic checkpoints and the final state are written to
 `market_data.zone_energy_checkpoints`. Each run gets a unique ID unless
 `--run-id` is supplied. Set `ZONE_ENERGY_MONGO_URI` for a different connection,
