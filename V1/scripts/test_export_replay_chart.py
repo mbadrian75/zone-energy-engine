@@ -1,10 +1,23 @@
 import unittest
 from datetime import datetime, timedelta
-from export_replay_chart import render_chart
+from export_replay_chart import render_chart, selected_break_events
+from types import SimpleNamespace
 from zone_energy.models import Candle, Interaction, InteractionState, Zone, ZoneState, ZoneType
 
 
 class ChartTests(unittest.TestCase):
+    def test_invalidation_break_can_be_selected_with_restored_interaction(self):
+        context = {"unattributed_breaks":[], "invalidated_reactions":[
+            {"zone_id":5,"interaction_id":6,"restored_interaction_id":5,
+             "break_index":33,"break_close":2653.525}]}
+        move = SimpleNamespace(id=5,breaks=[])
+        self.assertEqual(selected_break_events(context,move,5,33),[{"close":2653.525}])
+        self.assertEqual(selected_break_events(context,SimpleNamespace(id=99,breaks=[]),5,33),[])
+
+    def test_invalidated_interaction_dictionary_breaks_are_read(self):
+        move = SimpleNamespace(id=6,breaks=[{"broken_zone_id":4,"break_index":28,"break_close":2662.735}])
+        self.assertEqual(selected_break_events({"unattributed_breaks":[]},move,4,28),[{"close":2662.735}])
+
     def test_actual_ohlc_ambiguous_pattern_and_accepted_reaction_are_distinct(self):
         start = datetime(2025, 1, 1)
         bars = [Candle(start + timedelta(hours=i), *values, 0) for i, values in enumerate(

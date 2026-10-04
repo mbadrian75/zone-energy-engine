@@ -144,6 +144,27 @@ def render_chart(candles, zones, origin, move, break_index, first, last, invalid
             + ''.join(rows) + '</table></div></html>')
 
 
+def selected_break_events(context, move, broken_id, break_index):
+    """Find break evidence for the selected movement, including restored origins."""
+    events = [event for event in context["unattributed_breaks"]
+              if event["zone_id"] == broken_id and event["candle_index"] == break_index]
+    if not events:
+        events = [{"close":reaction["break_close"]}
+                  for reaction in context.get("invalidated_reactions", [])
+                  if reaction["break_index"] == break_index and reaction["zone_id"] == broken_id
+                  and move.id in (reaction["interaction_id"], reaction.get("restored_interaction_id"))]
+    if not events:
+        for record in getattr(move, "breaks", []):
+            values = record if isinstance(record, dict) else vars_from_break(record)
+            if values.get("broken_zone_id") == broken_id and values.get("break_index") == break_index:
+                events.append({"close":values["break_close"]})
+    return events
+
+
+def vars_from_break(record):
+    return {name:getattr(record,name) for name in ("broken_zone_id","break_index","break_close")}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", required=True)
@@ -186,15 +207,7 @@ def main():
         bars = market.get_candles(args.timeframe, context["start"], context["end"])
         if len(bars) <= args.checkpoint_index or bars[args.checkpoint_index].datetime != context["candle_datetime"]:
             raise ValueError("Candle indexing no longer matches checkpoint")
-        events = [event for event in context["unattributed_breaks"]
-                  if event["zone_id"] == broken_id and event["candle_index"] == args.break_index]
-        if not events:
-            events = [{"close":reaction["break_close"]} for reaction in invalid
-                      if reaction["break_index"]==args.break_index and reaction["zone_id"]==broken_id]
-        if not events:
-            events = [{"close":record.break_close} for record in getattr(move,"breaks", [])
-                      if hasattr(record,"break_close") and record.broken_zone_id==broken_id
-                      and record.break_index==args.break_index]
+        events = selected_break_events(context, move, broken_id, args.break_index)
         if len(events) != 1 or bars[args.break_index].close != events[0]["close"]:
             raise ValueError("Selected zone break does not match the checkpoint/candles")
         first = max(0, move.start_index - args.padding)
