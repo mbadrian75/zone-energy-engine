@@ -160,7 +160,7 @@ def test_resistance_body_on_boundary():
     print("Resistance body on boundary: PASS")
 
 
-def test_wrong_candle_direction():
+def test_candle_color_does_not_block_break():
     support = make_zone(ZoneType.SUPPORT)
 
     bullish_below_support = make_candle(
@@ -170,7 +170,7 @@ def test_wrong_candle_direction():
         close=98.0,
     )
 
-    assert not BreakDetector.is_broken(
+    assert BreakDetector.is_broken(
         support,
         bullish_below_support,
     )
@@ -186,12 +186,14 @@ def test_wrong_candle_direction():
         close=111.0,
     )
 
-    assert not BreakDetector.is_broken(
+    assert BreakDetector.is_broken(
         resistance,
         bearish_above_resistance,
     )
 
-    print("Wrong candle direction: PASS")
+    for kind, price in ((ZoneType.SUPPORT, 98), (ZoneType.RESISTANCE, 112)):
+        assert BreakDetector.is_broken(make_zone(kind), make_candle(price,price+1,price-1,price))
+    print("Candle color and doji do not block breaks: PASS")
 
 
 def test_broken_zone_is_ignored():
@@ -225,7 +227,7 @@ def main():
     test_support_body_on_boundary()
     test_resistance_body_on_boundary()
 
-    test_wrong_candle_direction()
+    test_candle_color_does_not_block_break()
     test_broken_zone_is_ignored()
 
     print(

@@ -14,11 +14,14 @@ from zone_energy.models import Candle,Interaction,InteractionState,Zone,ZoneStat
 from zone_energy.replay.replay_engine import ReplayEngine
 
 
-def fixture(mirrored=False, extra=False, undefined=False):
+def fixture(mirrored=False, extra=False, undefined=False, orphan=True):
     prices = [(2658.285,2666.775,2658.248,2666.575),
               (2666.595,2666.645,2662.074,2662.218),
               (2662.164,2666.714,2660.268,2664.124),
               (2664.234,2666.444,2662.068,2664.744)]
+    if orphan:
+        # Exercise retained C2 credits when there really is no OPEN origin.
+        prices[2] = (2662.164,2666.5,2660.268,2664.124)
     if mirrored:
         prices = [(-op,-low,-high,-close) for op,high,low,close in prices]
     bars = [Candle(datetime(2025,1,9,hour),*values,0)
@@ -34,6 +37,8 @@ def fixture(mirrored=False, extra=False, undefined=False):
                                       end_index=121,base_energy=None if undefined else 5)]
     source = zone(20,2666,2666.775,2666.775,122)
     source.interactions = [Interaction(48,20,InteractionState.OPEN,price(2666.775),122)]
+    if orphan:
+        source.interactions = []
     engine = ReplayEngine(EngineConfig(),5905,Boundary())
     engine.state.zones = [target,source]
     if extra:
@@ -59,7 +64,7 @@ class OutgoingC2Tests(unittest.TestCase):
             self.assertEqual(len(engine.state.pending_c2_breaks),1)
             self.assertEqual(len(engine.state.unattributed_breaks),1)
             self.assertEqual(engine.state.confirmed_c2_breaks,[])
-            self.assertEqual(engine._current(engine.state)[1].breaks,[])
+            self.assertIsNone(engine._current(engine.state))
             before = deepcopy(engine.state)
             def fail(*args):
                 raise RuntimeError("checkpoint failure")
@@ -114,7 +119,7 @@ class OutgoingC2Tests(unittest.TestCase):
         self.assertIsNone(record.break_evidence)
 
     def test_invalidation_discards_credit_and_checkpoints_are_immutable(self):
-        engine,bars,_ = fixture()
+        engine,bars,_ = fixture(orphan=False)
         engine.process(bars[2])
         repository = EngineResultsRepository(client=MemoryClient())
         def save(index):
@@ -130,7 +135,8 @@ class OutgoingC2Tests(unittest.TestCase):
         self.assertEqual(repository.get_checkpoint(first),saved)
         engine.process(Candle(bars[3].datetime+timedelta(hours=1),2659,2659.5,2656,2657,0))
         self.assertEqual(engine.state.confirmed_c2_breaks,[])
-        self.assertTrue(any(event["candle_index"]==124 for event in engine.state.unattributed_breaks))
+        self.assertFalse(any(event["candle_index"]==124 for event in engine.state.unattributed_breaks))
+        self.assertEqual(engine._current(engine.state)[1].breaks[0].break_index,124)
         self.assertEqual(len(engine.state.invalidated_reactions),1)
         self.assertEqual(engine._current(engine.state)[1].id,48)
 

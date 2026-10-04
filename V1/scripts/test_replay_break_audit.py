@@ -16,10 +16,10 @@ class AuditTests(unittest.TestCase):
             {"zone_id": 99, "candle_index": 5, "close": 100},
         ])
         before = deepcopy(pending)
-        # Resistance origin with a bullish candle has an unaligned direction.
+        # Candle color cannot explain an unattributed break when an origin exists.
         rows = inspect(engine, pending, 5, replay_tests.candles()[6])
         self.assertEqual(rows[0]["diagnosis"], "origin_zone_itself_broken")
-        self.assertEqual(rows[1]["diagnosis"], "candle_direction_not_aligned_with_origin")
+        self.assertEqual(rows[1]["diagnosis"], "eligible_origin_but_break_not_attributed")
         self.assertEqual(pending, before)
 
     def test_no_origin(self):

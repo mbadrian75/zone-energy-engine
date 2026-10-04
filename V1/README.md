@@ -78,6 +78,12 @@ reversals do not start concurrent moves. Role changes use the external price
 side saved before the current candle. Reactions are confirmed before current
 candle breaks; all breaks in that batch share a pre-break snapshot.
 
+Candle color does not determine physical breaks or their interaction ownership.
+A full body below support or above resistance breaks that zone, including bullish,
+bearish and doji candles. With a valid OPEN origin, eligible breaks belong to that
+interaction regardless of its role versus candle color. The same rule applies to
+outgoing C2 credits. Wick-only excursions remain excluded.
+
 ACTIVE-zone returns precede role changes; within either group, the latest
 creation index wins. Tied candidates abort the candle without partial state.
 Dual high/low patterns select the opposite of the current reaction type; without

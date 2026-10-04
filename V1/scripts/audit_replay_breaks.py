@@ -28,9 +28,6 @@ def inspect(engine, pending, index, candle):
             reason = "no_open_interaction"
         elif current[0].id == event["zone_id"]:
             reason = "origin_zone_itself_broken"
-        elif not ((current[0].type == ZoneType.SUPPORT and candle.is_bullish)
-                  or (current[0].type == ZoneType.RESISTANCE and candle.is_bearish)):
-            reason = "candle_direction_not_aligned_with_origin"
         else:
             reason = "eligible_origin_but_break_not_attributed"
         rows.append({**event, "datetime": candle.datetime.isoformat(),

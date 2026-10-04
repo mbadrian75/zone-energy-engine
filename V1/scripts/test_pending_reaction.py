@@ -49,7 +49,7 @@ class PendingReactionTests(unittest.TestCase):
             self.assertEqual(engine._current(engine.state)[1].start_index, 7)
         self.assertEqual(engine.state.pending_reaction["reversal"]["extreme_index"], 11)
         self.assertEqual([(r.broken_zone_id,r.break_index)
-                          for r in engine._current(engine.state)[1].breaks], [(1,13)])
+                          for r in engine._current(engine.state)[1].breaks], [(1,12)])
         engine.process(bars[6])
         self.assertIsNone(engine.state.pending_reaction)
         self.assertEqual(engine.state.rejected_reactions[-1]["reason"], "close_exited_against_reaction")
@@ -61,7 +61,7 @@ class PendingReactionTests(unittest.TestCase):
         engine.process(bars[2])
         c3 = replace(bars[3], low=2661, close=2661.5)
         engine.process(c3)
-        self.assertEqual(engine._current(engine.state)[0].id, 20)
+        self.assertIsNone(engine._current(engine.state))
         self.assertEqual(engine.state.confirmed_c2_breaks, [])
         self.assertIsNotNone(engine.state.pending_reaction)
         departure = Candle(c3.datetime+timedelta(hours=1),2661.5,2665,2661,2663,0)
@@ -100,7 +100,7 @@ class PendingReactionTests(unittest.TestCase):
         self.assertEqual(saved["reversal"]["type"],"support")
 
     def test_delayed_reaction_invalidation_restores_previous_origin(self):
-        engine, bars, _ = fixture()
+        engine, bars, _ = fixture(orphan=False)
         engine.process(bars[2])
         c3 = replace(bars[3], low=2661, close=2661.5)
         engine.process(c3)

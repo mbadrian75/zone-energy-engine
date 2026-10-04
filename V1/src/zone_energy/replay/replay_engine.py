@@ -259,11 +259,7 @@ class ReplayEngine:
         if current is not None and BreakDetector.is_broken(current[0], candle):
             raise _OriginBroken(current[0], current[1], index, candle)
         pre_break = self._snapshots.capture(pending.zones, index, self.year_candles)
-        aligns = current is not None and (
-            (current[0].type == ZoneType.SUPPORT and candle.is_bullish)
-            or (current[0].type == ZoneType.RESISTANCE and candle.is_bearish)
-        )
-        if aligns:
+        if current is not None:
             records = self._breaks.process(current[1], current[0], pending.zones,
                                            candle, index, self.year_candles)
             if records:
@@ -306,10 +302,6 @@ class ReplayEngine:
         The new origin may have the same zone ID as the broken old role.
         Never use the zone's new role or C3 energies to reconstruct this record.
         """
-        aligns = ((origin.type == ZoneType.SUPPORT and c2.is_bullish)
-                  or (origin.type == ZoneType.RESISTANCE and c2.is_bearish))
-        if not aligns:
-            return False
         records, confirmed, keys = [], [], set()
         for saved in state.pending_c2_breaks if saved_breaks is None else saved_breaks:
             pattern_index = pattern_confirmation_index or confirmation_index

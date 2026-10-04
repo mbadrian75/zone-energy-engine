@@ -64,7 +64,8 @@ class InvalidationTests(unittest.TestCase):
         engine._last_datetime = bars[1].datetime
         engine.process(bars[2])
         engine.process(Candle(bars[2].datetime+timedelta(hours=1),100,102,100,101,0))
-        self.assertEqual(engine.state.unattributed_breaks[0]["zone_id"],3)
+        self.assertEqual(engine.state.unattributed_breaks,[])
+        self.assertEqual(engine._current(engine.state)[1].breaks[0].broken_zone_id,3)
         before = deepcopy(engine.state)
         from test_engine_results_repository import MemoryClient
         from zone_energy.data import EngineResultsRepository
@@ -93,7 +94,7 @@ class InvalidationTests(unittest.TestCase):
         self.assertEqual(source.interactions[-1].state,InteractionState.OPEN)
         self.assertEqual(source.interactions[-1].start_index,15)
         records = source.interactions[-1].breaks
-        self.assertEqual([(r.broken_zone_id,r.break_index) for r in records],[(3,22),(1,23)])
+        self.assertEqual([(r.broken_zone_id,r.break_index) for r in records],[(3,21),(1,23)])
         expected = EffectiveZoneEnergyCalculator(EngineConfig()).calculate(target,23,1000)
         self.assertAlmostEqual(records[-1].broken_zone_energy_at_break,expected)
         self.assertEqual(engine.state.unattributed_breaks,[])
