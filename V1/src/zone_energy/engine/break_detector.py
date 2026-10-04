@@ -11,7 +11,7 @@ class BreakDetector:
     Detects valid V1 zone breaks.
 
     Wick is ignored.
-    Break validation uses the full candle body outside the zone,
+    Break validation uses the close outside the zone,
     independently of candle color.
     """
 
@@ -26,20 +26,10 @@ class BreakDetector:
             return False
 
         if zone.type == ZoneType.SUPPORT:
-            return (
-                max(
-                    candle.open,
-                    candle.close,
-                ) < zone.lower_price
-            )
+            return candle.close < zone.lower_price
 
         if zone.type == ZoneType.RESISTANCE:
-            return (
-                min(
-                    candle.open,
-                    candle.close,
-                ) > zone.upper_price
-            )
+            return candle.close > zone.upper_price
 
         raise ValueError(
             f"Unsupported zone type: {zone.type}"

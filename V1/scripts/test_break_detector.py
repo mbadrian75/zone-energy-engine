@@ -131,7 +131,7 @@ def test_support_body_on_boundary():
         open_price=100.0,
         high=101.0,
         low=95.0,
-        close=96.0,
+        close=100.0,
     )
 
     assert not BreakDetector.is_broken(
@@ -149,7 +149,7 @@ def test_resistance_body_on_boundary():
         open_price=110.0,
         high=115.0,
         low=109.0,
-        close=114.0,
+        close=110.0,
     )
 
     assert not BreakDetector.is_broken(
@@ -218,6 +218,12 @@ def test_broken_zone_is_ignored():
 
 
 def main():
+    for kind, close in ((ZoneType.SUPPORT,99), (ZoneType.RESISTANCE,111)):
+        assert BreakDetector.is_broken(make_zone(kind),make_candle(105,115,95,close))
+    # Actual C32 crosses support while its opening remains inside the zone.
+    zone = make_zone(ZoneType.SUPPORT)
+    zone.lower_price,zone.upper_price = 2653.648,2655.948
+    assert BreakDetector.is_broken(zone,make_candle(2654.045,2655.568,2649.795,2652.805))
     test_valid_support_break()
     test_valid_resistance_break()
 

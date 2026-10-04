@@ -42,11 +42,11 @@ class InvalidationTests(unittest.TestCase):
         origin,move = engine._current(engine.state)
         self.assertEqual((move.start_index,move.start_price),(7,2637.945))
         invalid = engine.state.invalidated_reactions[-1]
-        self.assertEqual((invalid["reaction_index"],invalid["break_index"]),(8,12))
+        self.assertEqual((invalid["reaction_index"],invalid["break_index"]),(8,11))
         broken = next(zone for zone in engine.state.zones if zone.id==invalid["zone_id"])
         self.assertEqual(broken.state,ZoneState.BROKEN)
         self.assertEqual(broken.interactions,[])
-        self.assertTrue(any(record.broken_zone_id==broken.id and record.break_index==12 for record in move.breaks))
+        self.assertTrue(any(record.broken_zone_id==broken.id and record.break_index==11 for record in move.breaks))
 
     def test_restore_origin_replay_intervening_breaks_preserve_energy_and_atomicity(self):
         target, source, reversal, bars = scenario(ZoneType.SUPPORT)

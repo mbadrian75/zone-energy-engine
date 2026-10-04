@@ -70,7 +70,7 @@ class BreakProcessorTests(unittest.TestCase):
 
     def test_no_valid_break_leaves_state_unchanged(self):
         origin, first, second, current, _ = scenario()
-        candle = Candle(datetime(2025, 1, 1), 105, 120, 104, 115, 0)
+        candle = Candle(datetime(2025, 1, 1), 105, 120, 104, 105, 0)
         history = [origin, first, second]
         before = deepcopy(history)
         self.assertEqual(self.processor.process(current, origin, history, candle, 1000, 1000), [])

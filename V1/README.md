@@ -79,10 +79,11 @@ side saved before the current candle. Reactions are confirmed before current
 candle breaks; all breaks in that batch share a pre-break snapshot.
 
 Candle color does not determine physical breaks or their interaction ownership.
-A full body below support or above resistance breaks that zone, including bullish,
+A close strictly below support or above resistance breaks that zone, including bullish,
 bearish and doji candles. With a valid OPEN origin, eligible breaks belong to that
 interaction regardless of its role versus candle color. The same rule applies to
-outgoing C2 credits. Wick-only excursions remain excluded.
+outgoing C2 credits. The opening price may be inside the zone. Wick-only excursions
+and closes exactly on the boundary remain excluded.
 
 ACTIVE-zone returns precede role changes; within either group, the latest
 creation index wins. Tied candidates abort the candle without partial state.

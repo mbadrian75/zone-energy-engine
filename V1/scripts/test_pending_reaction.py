@@ -49,7 +49,7 @@ class PendingReactionTests(unittest.TestCase):
             self.assertEqual(engine._current(engine.state)[1].start_index, 7)
         self.assertEqual(engine.state.pending_reaction["reversal"]["extreme_index"], 11)
         self.assertEqual([(r.broken_zone_id,r.break_index)
-                          for r in engine._current(engine.state)[1].breaks], [(1,12)])
+                          for r in engine._current(engine.state)[1].breaks], [(1,11)])
         engine.process(bars[6])
         self.assertIsNone(engine.state.pending_reaction)
         self.assertEqual(engine.state.rejected_reactions[-1]["reason"], "close_exited_against_reaction")
