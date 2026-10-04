@@ -77,7 +77,7 @@ def test_valid_role_change():
         103.0,
         105.0,
         99.0,
-        100.0,
+        99.0,
     )
 
     reversal = Reversal(

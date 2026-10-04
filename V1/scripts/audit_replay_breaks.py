@@ -84,6 +84,9 @@ def main():
                 or engine.state.invalidated_reactions != context.get("invalidated_reactions", [])
                 or engine.state.pending_c2_breaks != context.get("pending_c2_breaks", [])
                 or engine.state.confirmed_c2_breaks != context.get("confirmed_c2_breaks", [])
+                  or engine.state.pending_reaction != context.get("pending_reaction")
+                  or engine.state.rejected_reactions != context.get("rejected_reactions", [])
+                  or engine.state.reaction_confirmations != context.get("reaction_confirmations", [])
                 or engine._last_datetime != context["candle_datetime"]):
             raise ValueError("Reconstructed history differs from checkpoint; report withheld")
         print("Checkpoint reconstruction: MATCH")
@@ -105,6 +108,10 @@ def main():
         print(f"Confirmed outgoing C2 breaks: {len(engine.state.confirmed_c2_breaks)}")
         for report in engine.state.confirmed_c2_breaks:
             print(json.dumps(report, ensure_ascii=False))
+        print(f"Rejected reactions: {len(engine.state.rejected_reactions)}")
+        for report in engine.state.rejected_reactions:
+            print(json.dumps(report, ensure_ascii=False, default=str))
+        print(f"Pending reactions: {int(engine.state.pending_reaction is not None)}")
     finally:
         results.close()
         market.close()
@@ -137,7 +144,12 @@ def compare_c3(row, candles, state):
         for interaction in zone.interactions:
             if (interaction.start_index == index
                     and interaction.start_price == reversal.extreme_price):
-                accepted.append({"zone_id":zone.id, "interaction_id":interaction.id})
+                item = {"zone_id":zone.id, "interaction_id":interaction.id}
+                confirmation = next((entry for entry in getattr(state, "reaction_confirmations", [])
+                                     if entry["interaction_id"] == interaction.id), None)
+                if confirmation is not None:
+                    item["departure_index"] = confirmation["departure_index"]
+                accepted.append(item)
     invalid = [{"zone_id":reaction["zone_id"], "interaction_id":reaction["interaction_id"],
                 "invalidated_at":reaction["break_index"]}
                for reaction in state.invalidated_reactions
@@ -146,7 +158,9 @@ def compare_c3(row, candles, state):
     result["valid_reactions_at_c2"] = accepted
     result["later_invalidated_reactions_at_c2"] = invalid
     result["c3_check"] = (
-        "opposite_reaction_confirmed_next_candle" if accepted else
+        ("opposite_reaction_confirmed_next_candle"
+         if all(item.get("departure_index", index+1) == index+1 for item in accepted)
+         else "opposite_reaction_confirmed_after_later_close") if accepted else
         "opposite_reaction_later_invalidated" if invalid else
         "opposite_pattern_without_retained_reaction"
     )

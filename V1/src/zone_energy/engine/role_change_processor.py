@@ -2,6 +2,7 @@ from collections.abc import Iterable
 from dataclasses import replace
 
 from zone_energy.engine.return_reversal_processor import ReturnReversalProcessor
+from zone_energy.engine.reaction_departure_detector import ReactionDepartureDetector
 from zone_energy.engine.interaction_starter import (
     InteractionStarter,
 )
@@ -43,7 +44,7 @@ class RoleChangeProcessor:
         interaction_id: int,
         current_candle_index: int,
         zones: Iterable[Zone],
-        *, previous_type=None,
+        *, previous_type=None, departure_candle=None, departure_index=None,
     ) -> Interaction | None:
         """Confirm and stage the new role and reaction before changing history."""
         history = list(zones)
@@ -58,6 +59,7 @@ class RoleChangeProcessor:
             pending, reversal, c1, c2, c3, interaction_id,
             current_candle_index, pending_history,
             previous_type=previous_type,
+            departure_candle=departure_candle, departure_index=departure_index,
         )
         if interaction is None:
             return None
@@ -85,7 +87,7 @@ class RoleChangeProcessor:
             c3=c3,
         )
 
-        if not is_role_change:
+        if not is_role_change or not ReactionDepartureDetector.has_departed(zone, reversal, c3):
             return None
 
         pending = replace(zone, interactions=list(zone.interactions))

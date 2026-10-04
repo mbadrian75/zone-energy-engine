@@ -12,7 +12,8 @@ from zone_energy.engine.reversal_detector import ReversalDetector
 from zone_energy.models import ZoneType
 
 
-def render_chart(candles, zones, origin, move, break_index, first, last, invalidated_reactions=(), broken_zone=None):
+def render_chart(candles, zones, origin, move, break_index, first, last, invalidated_reactions=(), broken_zone=None,
+                 reaction_confirmations=None, rejected_reactions=()):
     """Display raw patterns separately from reactions actually stored by replay."""
     if not (0 <= first <= move.start_index <= break_index <= last < len(candles)):
         raise ValueError("Chart window must contain the interaction start and break")
@@ -77,6 +78,10 @@ def render_chart(candles, zones, origin, move, break_index, first, last, invalid
                     previous_type = ZoneType.RESISTANCE
                 elif latest.start_price == origin_bar.low:
                     previous_type = ZoneType.SUPPORT
+            if reaction_confirmations is not None:
+                known = [entry for entry in reaction_confirmations if entry["departure_index"] <= index]
+                previous_type = (ZoneType(max(known, key=lambda entry: entry["departure_index"])["reaction_type"])
+                                 if known else None)
             reversal = ReversalDetector.detect(
                 previous, bar, following, index-1, index, index+1,
                 previous_type=previous_type,
@@ -94,6 +99,13 @@ def render_chart(candles, zones, origin, move, break_index, first, last, invalid
                 pattern = f"Ambiguous high AND low: no previous reaction at {index+1}"
                 label(px - 4, y(bar.low) + 18, "×", "#d97706", 20)
         stored = "; ".join(f"zone {z}, interaction {i}" for z, i in accepted.get(index, []))
+        for entry in reaction_confirmations or []:
+            if entry["reaction_index"] == index:
+                stored += f"; close confirms departure at {entry['departure_index']}"
+        for entry in rejected_reactions:
+            if entry["reaction_index"] == index:
+                stored += f"; REJECTED at {entry['rejected_at']}: {entry['reason']}"
+                label(px-7, y(bar.high)-23, "×", "#64748b", 24)
         invalid = [reaction for reaction in invalidated_reactions if reaction["reaction_index"] == index]
         for reaction in invalid:
             stored += ("; " if stored else "") + f"INVALIDATED interaction {reaction['interaction_id']} at break {reaction['break_index']}"
@@ -117,7 +129,7 @@ def render_chart(candles, zones, origin, move, break_index, first, last, invalid
             '<h2>کندل‌های واقعی بین واکنش و شکست زون</h2>'
             '<p>محدوده قرمز: زون شکسته‌شده. اگر مبدأ حرکت زون دیگری باشد، محدوده آن آبی نمایش داده می‌شود. '
             'محدوده‌ها ثابت‌اند؛ این رنگ‌ها وضعیت فعال یا شکسته زون در تمام بازه را نشان نمی‌دهند.</p>'
-            '<p>دایره آبی S: کف سه کندلی؛ دایره بنفش R: سقف سه کندلی. تأیید در کندل بعد انجام می‌شود. '
+            '<p>دایره آبی S: کف سه کندلی؛ دایره بنفش R: سقف سه کندلی. الگو در کندل بعد مشخص می‌شود؛ تأیید واکنش به بسته‌شدن بیرون زون نیاز دارد و زمان آن در جدول آمده است. × خاکستری: الگوی ردشده. '
             'در کندل هم‌زمان سقف و کف، نوع مخالف واکنش قبلی انتخاب می‌شود. '
             'علامت نارنجی ×: برای انتخاب نوع، واکنش قبلی در دسترس نیست. '
             'مربع سیاه: شروع Interaction معتبر ثبت‌شده در Replay. '
@@ -189,7 +201,9 @@ def main():
         last = min(args.checkpoint_index, args.break_index + args.padding)
         html = render_chart(bars, zones, origin, move, args.break_index, first, last,
                             context.get("invalidated_reactions", []),
-                            broken_zone=target if args.broken_zone_id is not None else None)
+                            broken_zone=target if args.broken_zone_id is not None else None,
+                            reaction_confirmations=context.get("reaction_confirmations"),
+                            rejected_reactions=context.get("rejected_reactions", []))
         output = Path(args.output).resolve()
         output.write_text(html, encoding="utf-8")
         print(f"Origin zone: {origin.id}; broken zone: {broken_id}; interaction: {move.id}; start: {move.start_index}; break: {args.break_index}")

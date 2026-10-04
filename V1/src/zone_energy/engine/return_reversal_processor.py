@@ -4,6 +4,7 @@ from dataclasses import replace
 
 from zone_energy.engine.previous_move_resolver import PreviousMoveResolver
 from zone_energy.engine.reversal_detector import ReversalDetector
+from zone_energy.engine.reaction_departure_detector import ReactionDepartureDetector
 from zone_energy.engine.interaction_starter import (
     InteractionStarter,
 )
@@ -31,7 +32,7 @@ class ReturnReversalProcessor:
         interaction_id: int,
         current_candle_index: int,
         zones: Iterable[Zone],
-        *, previous_type=None,
+        *, previous_type=None, departure_candle=None, departure_index=None,
     ) -> Interaction | None:
         """Start a confirmed return and assign its incoming reference atomically."""
         history = list(zones)
@@ -43,6 +44,7 @@ class ReturnReversalProcessor:
         interaction = ReturnReversalProcessor.process_confirmed(
             pending_zone, reversal, c1, c2, c3, interaction_id, current_candle_index,
             previous_type=previous_type,
+            departure_candle=departure_candle, departure_index=departure_index,
         )
         if interaction is None:
             return None
@@ -64,7 +66,7 @@ class ReturnReversalProcessor:
         c3: Candle,
         interaction_id: int,
         current_candle_index: int,
-        *, previous_type=None,
+        *, previous_type=None, departure_candle=None, departure_index=None,
     ) -> Interaction | None:
         """Validate C3 confirmation and chronology before starting a reaction.
 
@@ -98,6 +100,13 @@ class ReturnReversalProcessor:
         )
         if confirmed != reversal:
             raise ValueError("Supplied reversal does not match the three-candle pattern")
+        if departure_candle is None:
+            departure_candle, departure_index = c3, reversal.detection_index
+        if (not isinstance(departure_index, int) or isinstance(departure_index, bool)
+                or not reversal.detection_index <= departure_index <= current_candle_index):
+            raise ValueError("Departure must be confirmed within known candle history")
+        if not ReactionDepartureDetector.has_departed(zone, reversal, departure_candle):
+            return None
         if not ReturnReversalDetector.detect(zone, reversal, c1, c2, c3):
             return None
         if any(move.start_index == reversal.extreme_index for move in zone.interactions):
@@ -110,7 +119,8 @@ class ReturnReversalProcessor:
             origins.append(last_origin)
         if origins and reversal.extreme_index < max(origins):
             raise ValueError("Reactions must be processed chronologically")
-        return ReturnReversalProcessor.process(zone, reversal, c1, c2, c3, interaction_id)
+        return ReturnReversalProcessor.process(zone, reversal, c1, c2, c3, interaction_id,
+                                             departure_candle=departure_candle)
 
     @staticmethod
     def process(
@@ -120,6 +130,7 @@ class ReturnReversalProcessor:
         c2: Candle,
         c3: Candle,
         interaction_id: int,
+        *, departure_candle=None,
     ) -> Interaction | None:
 
         is_return_reversal = (
@@ -132,7 +143,8 @@ class ReturnReversalProcessor:
             )
         )
 
-        if not is_return_reversal:
+        if not is_return_reversal or not ReactionDepartureDetector.has_departed(
+                zone, reversal, departure_candle or c3):
             return None
 
         interaction = InteractionStarter.start(

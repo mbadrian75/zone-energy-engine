@@ -22,7 +22,10 @@ class ContextualReversalTests(unittest.TestCase):
                   (2664.234,2666.444,2662.068,2664.744)]
         bars = [Candle(datetime(2025,1,9,hour), *values, 0)
                 for hour, values in zip((1,2,3,4), prices)]
-        engine = ReplayEngine(EngineConfig(), 5905, Boundary())
+        class NarrowBoundary:
+            def resolve(self, reversal, candle):
+                return candle.low,candle.low+1
+        engine = ReplayEngine(EngineConfig(), 5905, NarrowBoundary())
         origin = Zone(19, ZoneType.RESISTANCE, ZoneState.ACTIVE,
                       2663.795,2666.775,2666.775,122,created_at_index=123)
         origin.interactions = [Interaction(45,19,InteractionState.OPEN,2666.775,122)]
@@ -44,8 +47,8 @@ class ContextualReversalTests(unittest.TestCase):
     def test_dual_extreme_uses_opposite_role_and_confirmation_accepts_it(self):
         for kind in (ZoneType.SUPPORT, ZoneType.RESISTANCE):
             target, source, reversal, bars = scenario(kind)
-            bars[1] = (replace(bars[1], low=98) if kind == ZoneType.SUPPORT
-                       else replace(bars[1], high=112))
+            bars[1] = (replace(bars[1], low=97) if kind == ZoneType.SUPPORT
+                       else replace(bars[1], high=113))
             # The reaction extreme is unchanged; the other extreme now also qualifies.
             self.assertIsNone(ReversalDetector.detect(*bars,19,20,21))
             detected = ReversalDetector.detect(*bars,19,20,21,previous_type=kind)

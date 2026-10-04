@@ -16,9 +16,10 @@ from zone_energy.engine.return_reversal_processor import ReturnReversalProcessor
 from zone_energy.engine.reversal_detector import ReversalDetector
 from zone_energy.engine.role_change_detector import RoleChangeDetector
 from zone_energy.engine.role_change_processor import RoleChangeProcessor
-from zone_energy.engine.zone_creation_processor import ZoneCreationProcessor
 from zone_energy.engine.zone_price_side_updater import ZonePriceSideUpdater
-from zone_energy.models import InteractionState, Zone, ZoneState, ZoneType
+from zone_energy.engine.zone_factory import ZoneFactory
+from zone_energy.engine.reaction_departure_detector import ReactionDepartureDetector
+from zone_energy.models import Candle, InteractionState, Reversal, Zone, ZoneState, ZoneType
 
 
 @dataclass
@@ -30,6 +31,9 @@ class ReplayState:
     invalidated_reactions: list = field(default_factory=list)
     pending_c2_breaks: list = field(default_factory=list)
     confirmed_c2_breaks: list = field(default_factory=list)
+    pending_reaction: dict | None = None
+    rejected_reactions: list = field(default_factory=list)
+    reaction_confirmations: list = field(default_factory=list)
 
 
 class _OriginBroken(Exception):
@@ -138,7 +142,27 @@ class ReplayEngine:
         pending = deepcopy(self.state)
         current = self._current(pending)
         events = []
-        new_reaction = None
+        prior_c2_credits = len(pending.confirmed_c2_breaks)
+        if pending.pending_reaction is not None:
+            waiting = pending.pending_reaction
+            target = next(zone for zone in pending.zones if zone.id == waiting["zone_id"])
+            reversal = Reversal(**waiting["reversal"])
+            suppressed = self._suppressed.get((reversal.extreme_index, reversal.type))
+            wrong_side = (candle.close > target.upper_price if reversal.type == ZoneType.RESISTANCE
+                          else candle.close < target.lower_price)
+            if suppressed is not None:
+                target.type = suppressed.zone.type
+                target.state = ZoneState.ACTIVE
+                pending.next_interaction_id = max(pending.next_interaction_id, suppressed.interaction.id+1)
+                pending.pending_reaction = None
+                events.append("invalid_reaction_skipped")
+            elif wrong_side:
+                self._reject_pending(pending, index, "close_exited_against_reaction")
+                events.append("reaction_rejected")
+            elif ReactionDepartureDetector.has_departed(target, reversal, candle):
+                self._activate_pending(pending, candle, index)
+                events.append("reaction_confirmed_by_close")
+        current = self._current(pending)
         if len(self._recent) == 2:
             c1, c2 = self._recent
             previous_type = current[0].type if current else None
@@ -199,38 +223,37 @@ class ReplayEngine:
                     raise ValueError("\n".join(details))
                 if matches:
                     target, role = matches[0]
-                    if current is not None:
-                        InteractionFinalizer.finalize(current[1], current[0], target,
-                                                     pending.zones, index, ending_reversal=reversal)
-                    processor = RoleChangeProcessor if role else ReturnReversalProcessor
-                    reaction = processor.process_with_reference(
-                        target, reversal, c1, c2, candle, pending.next_interaction_id,
-                        index, pending.zones,
-                        previous_type=previous_type,
-                    )
-                    if reaction is not None:
-                        new_reaction = (target, reaction)
-                        pending.next_interaction_id += 1
+                    self._queue_reaction(pending, target, role, reversal, c1, c2, candle, previous_type, index)
+                    if ReactionDepartureDetector.has_departed(target, reversal, candle):
+                        self._activate_pending(pending, candle, index)
                         events.append("role_change" if role else "return_reaction")
+                    else:
+                        self._wait_or_reject(pending, target, reversal, candle, index, events)
                 else:
                     boundary = self.boundary_service.resolve(reversal, c2)
                     if boundary is not None:
-                        created = ZoneCreationProcessor.process(
-                            pending.zones, pending.next_zone_id, pending.next_interaction_id,
-                            reversal, *boundary, index,
+                        created = ZoneFactory.create(
+                            pending.next_zone_id, pending.next_interaction_id,
+                            reversal, *boundary,
                             previous_zone_id=current[0].id if current else None,
                         )
-                        new_reaction = (created, created.interactions[-1])
+                        created.interactions = []
+                        created.last_interaction_origin_index = None
+                        pending.zones.append(created)
                         pending.next_zone_id += 1
-                        pending.next_interaction_id += 1
                         events.append("zone_created")
+                        self._queue_reaction(pending, created, False, reversal, c1, c2, candle, previous_type, index)
+                        if ReactionDepartureDetector.has_departed(created, reversal, candle):
+                            self._activate_pending(pending, candle, index)
+                            events.append("reaction_confirmed_by_close")
+                        else:
+                            self._wait_or_reject(pending, created, reversal, candle, index, events)
                     else:
                         events.append("missing_boundary")
 
-        if new_reaction is not None:
-            if self._confirm_c2_breaks(pending, *new_reaction, c2, index):
-                events.append("c2_break_confirmed")
-        # A C2 candidate has exactly one chance: the next candle must confirm it.
+        if len(pending.confirmed_c2_breaks) > prior_c2_credits:
+            events.append("c2_break_confirmed")
+        # Preserve a candidate's C2 snapshot inside pending_reaction until departure.
         pending.pending_c2_breaks = []
         current = self._current(pending)
         if current is not None and BreakDetector.is_broken(current[0], candle):
@@ -276,7 +299,8 @@ class ReplayEngine:
         self._recent.append(candle)
         return events
 
-    def _confirm_c2_breaks(self, state, origin, interaction, c2, confirmation_index):
+    def _confirm_c2_breaks(self, state, origin, interaction, c2, confirmation_index,
+                           saved_breaks=None, pattern_confirmation_index=None):
         """Credit outgoing movement using the immutable old-role C2 references.
 
         The new origin may have the same zone ID as the broken old role.
@@ -287,8 +311,9 @@ class ReplayEngine:
         if not aligns:
             return False
         records, confirmed, keys = [], [], set()
-        for saved in state.pending_c2_breaks:
-            if saved["break_index"] != interaction.start_index or saved["break_index"] != confirmation_index - 1:
+        for saved in state.pending_c2_breaks if saved_breaks is None else saved_breaks:
+            pattern_index = pattern_confirmation_index or confirmation_index
+            if saved["break_index"] != interaction.start_index or saved["break_index"] != pattern_index - 1:
                 continue
             if (saved["datetime"], saved["open"], saved["high"], saved["low"], saved["close"]) != (
                     c2.datetime, c2.open, c2.high, c2.low, c2.close):
@@ -313,6 +338,7 @@ class ReplayEngine:
             confirmed.append({
                 "broken_zone_id": old_role.id, "broken_zone_type": old_role.type.value,
                 "break_index": record.break_index, "confirmation_index": confirmation_index,
+                "pattern_confirmation_index": pattern_index,
                 "origin_zone_id": origin.id, "origin_zone_type": origin.type.value,
                 "interaction_id": interaction.id, "same_zone_role_change": old_role.id == origin.id,
                 "broken_zone_energy_at_break": record.broken_zone_energy_at_break,
@@ -324,3 +350,53 @@ class ReplayEngine:
         state.unattributed_breaks = [event for event in state.unattributed_breaks
                                     if (event["zone_id"], event["candle_index"]) not in keys]
         return bool(records)
+
+    @staticmethod
+    def _wait_or_reject(state, zone, reversal, candle, index, events):
+        wrong_side = (candle.close > zone.upper_price if reversal.type == ZoneType.RESISTANCE
+                      else candle.close < zone.lower_price)
+        if wrong_side:
+            ReplayEngine._reject_pending(state, index, "close_exited_against_reaction")
+            events.append("reaction_rejected")
+        else:
+            events.append("reaction_pending_close")
+
+    @staticmethod
+    def _reject_pending(state, index, reason):
+        candidate = state.pending_reaction
+        state.rejected_reactions.append({"zone_id":candidate["zone_id"],
+            "reaction_index":candidate["reversal"]["extreme_index"],
+            "reaction_type":candidate["reversal"]["type"],"rejected_at":index,"reason":reason})
+        state.pending_reaction = None
+
+    def _queue_reaction(self, state, target, role, reversal, c1, c2, c3, previous_type, index):
+        if state.pending_reaction is not None:
+            self._reject_pending(state, index, "superseded_by_later_opposite_pattern")
+        state.pending_reaction = {"zone_id":target.id,"role_change":bool(role),
+            "reversal":asdict(reversal),"c1":asdict(c1),"c2":asdict(c2),"c3":asdict(c3),
+            "previous_type":previous_type,
+            "c2_breaks":deepcopy(state.pending_c2_breaks)}
+
+    def _activate_pending(self, state, departure, index):
+        candidate = state.pending_reaction
+        target = next(zone for zone in state.zones if zone.id==candidate["zone_id"])
+        reversal = Reversal(**candidate["reversal"])
+        bars = [Candle(**candidate[name]) for name in ("c1","c2","c3")]
+        current = self._current(state)
+        if current is not None:
+            InteractionFinalizer.finalize(current[1],current[0],target,state.zones,index,
+                                         ending_reversal=reversal)
+        processor = RoleChangeProcessor if candidate["role_change"] else ReturnReversalProcessor
+        reaction = processor.process_with_reference(target,reversal,*bars,state.next_interaction_id,
+            index,state.zones,previous_type=candidate["previous_type"],
+            departure_candle=departure,departure_index=index)
+        if reaction is None:
+            raise ValueError("Pending reaction no longer matches its confirmed pattern")
+        state.next_interaction_id += 1
+        self._confirm_c2_breaks(state,target,reaction,bars[1],index,
+            saved_breaks=candidate["c2_breaks"],pattern_confirmation_index=reversal.detection_index)
+        state.reaction_confirmations.append({"zone_id":target.id,"interaction_id":reaction.id,
+            "reaction_index":reversal.extreme_index,"reaction_type":reversal.type.value,
+            "pattern_confirmation_index":reversal.detection_index,
+            "departure_index":index,"departure_datetime":departure.datetime})
+        state.pending_reaction = None

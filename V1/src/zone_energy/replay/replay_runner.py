@@ -32,6 +32,9 @@ class ReplayRunner:
                                 "invalidated_reactions": state.invalidated_reactions,
                                 "pending_c2_breaks": state.pending_c2_breaks,
                                 "confirmed_c2_breaks": state.confirmed_c2_breaks,
+                                "pending_reaction": state.pending_reaction,
+                                "rejected_reactions": state.rejected_reactions,
+                                "reaction_confirmations": state.reaction_confirmations,
                                 "next_zone_id": state.next_zone_id,
                                 "next_interaction_id": state.next_interaction_id},
             )
@@ -53,4 +56,6 @@ class ReplayRunner:
                 "unattributed_breaks": len(self.engine.state.unattributed_breaks),
                 "invalidated_reactions": len(self.engine.state.invalidated_reactions),
                 "confirmed_c2_breaks": len(self.engine.state.confirmed_c2_breaks),
+                "pending_reactions": int(self.engine.state.pending_reaction is not None),
+                "rejected_reactions": len(self.engine.state.rejected_reactions),
                 "last_checkpoint": last_checkpoint}

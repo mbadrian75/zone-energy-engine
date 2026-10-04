@@ -62,6 +62,16 @@ an explicitly calibrated `--year-candles` count. Dates follow the timestamp
 convention of the stored candles; `--end` is exclusive. M15 data must also exist
 for each main-timeframe C2 window.
 
+Three-candle patterns are candidates until a candle closes outside their zone
+in the reaction direction: above the upper boundary for support, below the lower
+boundary for resistance. Wicks and a close exactly on the boundary do not confirm
+departure; the opening price need not be outside. A candidate can wait beyond C3.
+Until departure the previous valid origin remains current. An opposite-side close
+rejects the candidate; a later opposite pattern supersedes it. Candidate zones
+remain tracked without creating an interaction or reaction energy.
+`replay_context.pending_reaction`, `rejected_reactions` and `reaction_confirmations`
+record waiting candidates, rejection reasons and actual departure candle indices.
+
 The replay keeps one OPEN interaction. An opposite confirmed reaction closes
 the current move at its new extreme and starts the next interaction. Same-role
 reversals do not start concurrent moves. Role changes use the external price
@@ -89,11 +99,12 @@ confirmed origin are retained under `replay_context.unattributed_breaks`; no
 origin energy is fabricated. Missing M15 boundaries skip creation of that zone.
 
 For an unattributed break on C2, retain the old zone role and the shared pre-break
-energy/median snapshot in `replay_context.pending_c2_breaks`. If the next C3
-confirms an accepted opposite reaction on that C2 and the break direction agrees
+energy/median snapshot in `replay_context.pending_c2_breaks`. If C3 identifies
+an opposite candidate on that C2, its frozen snapshot survives while departure
+is pending. Once a close confirms the reaction and the break direction agrees
 with its outgoing movement, attach the break to that new interaction. Its break
 time is zero; barrier energy uses the original C2 snapshot, not recalculated C3
-values. No evidence is credited before C3. Old role and new origin can have the
+values. No evidence is credited before confirmed departure. Old role and new origin can have the
 same zone ID; `confirmed_c2_breaks` identifies each role separately. If no valid
 reaction is confirmed, the event remains unattributed. Invalidation replay also
 removes credits belonging to a discarded reaction. Saved earlier checkpoints

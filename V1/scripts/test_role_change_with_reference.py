@@ -22,8 +22,8 @@ def scenario(old_kind=ZoneType.SUPPORT):
     source_price = 90 if support else 130
     source = Zone(2, old_kind, ZoneState.ACTIVE, source_price - 1, source_price + 1,
                   source_price, 15, created_at_index=16)
-    prices = ((103, 106, 101, 104), (104, 108, 102, 103), (103, 105, 99, 100)) if support else (
-        (107, 109, 104, 106), (106, 108, 102, 107), (107, 111, 105, 110))
+    prices = ((103, 106, 101, 104), (104, 108, 102, 103), (103, 105, 98, 99)) if support else (
+        (107, 109, 104, 106), (106, 108, 102, 107), (107, 112, 105, 111))
     candles = [Candle(datetime(2025, 1, 1, hour), *values, 0)
                for hour, values in zip((10, 11, 12), prices)]
     reversal = Reversal(new_kind, 108 if support else 102, 20, 21)

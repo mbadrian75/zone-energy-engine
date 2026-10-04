@@ -26,7 +26,10 @@ def candles():
 
 class Boundary:
     def resolve(self, reversal, origin):
-        return origin.low, origin.high
+        # Emulate a narrower M15 zone whose C3 actually closes outside it.
+        if reversal.type.value == "support":
+            return origin.low, min(origin.low+5,origin.high)
+        return max(origin.high-10,origin.low),origin.high
 
 
 class Market:
