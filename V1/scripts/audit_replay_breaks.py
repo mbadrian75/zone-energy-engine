@@ -84,6 +84,8 @@ def main():
                   or engine.state.pending_reaction != context.get("pending_reaction")
                   or engine.state.rejected_reactions != context.get("rejected_reactions", [])
                   or engine.state.reaction_confirmations != context.get("reaction_confirmations", [])
+                  or engine.state.pending_origin_break != context.get("pending_origin_break")
+                  or engine.state.resolved_origin_breaks != context.get("resolved_origin_breaks", [])
                 or engine._last_datetime != context["candle_datetime"]):
             raise ValueError("Reconstructed history differs from checkpoint; report withheld")
         print("Checkpoint reconstruction: MATCH")
@@ -109,6 +111,10 @@ def main():
         for report in engine.state.rejected_reactions:
             print(json.dumps(report, ensure_ascii=False, default=str))
         print(f"Pending reactions: {int(engine.state.pending_reaction is not None)}")
+        print(f"Pending origin breaks: {int(engine.state.pending_origin_break is not None)}")
+        print(f"Resolved origin breaks: {len(engine.state.resolved_origin_breaks)}")
+        for report in engine.state.resolved_origin_breaks:
+            print(json.dumps(report, ensure_ascii=False))
     finally:
         results.close()
         market.close()

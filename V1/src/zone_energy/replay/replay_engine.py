@@ -34,6 +34,8 @@ class ReplayState:
     pending_reaction: dict | None = None
     rejected_reactions: list = field(default_factory=list)
     reaction_confirmations: list = field(default_factory=list)
+    pending_origin_break: dict | None = None
+    resolved_origin_breaks: list = field(default_factory=list)
 
 
 class _OriginBroken(Exception):
@@ -143,6 +145,7 @@ class ReplayEngine:
         current = self._current(pending)
         events = []
         prior_c2_credits = len(pending.confirmed_c2_breaks)
+        deferred = pending.pending_origin_break
         if pending.pending_reaction is not None:
             waiting = pending.pending_reaction
             target = next(zone for zone in pending.zones if zone.id == waiting["zone_id"])
@@ -251,13 +254,42 @@ class ReplayEngine:
                     else:
                         events.append("missing_boundary")
 
+        if deferred is not None:
+            confirmed = self._current(pending)
+            if (confirmed is None or confirmed[1].start_index != deferred["break_index"]
+                    or confirmed[0].type.value == deferred["origin_type"]):
+                original = next(zone for zone in pending.zones if zone.id == deferred["zone_id"])
+                move = next(move for move in original.interactions if move.id == deferred["interaction_id"])
+                raise _OriginBroken(original, move, deferred["break_index"], Candle(**deferred["candle"]))
+            pending.resolved_origin_breaks.append({
+                "broken_zone_id":deferred["zone_id"],"break_index":deferred["break_index"],
+                "confirmation_index":index,"origin_zone_id":confirmed[0].id,
+                "interaction_id":confirmed[1].id})
+            pending.pending_origin_break = None
+            events.append("origin_break_confirmed_from_opposite_zone")
         if len(pending.confirmed_c2_breaks) > prior_c2_credits:
             events.append("c2_break_confirmed")
         # Preserve a candidate's C2 snapshot inside pending_reaction until departure.
         pending.pending_c2_breaks = []
         current = self._current(pending)
+        defer_origin = False
         if current is not None and BreakDetector.is_broken(current[0], candle):
-            raise _OriginBroken(current[0], current[1], index, candle)
+            opposite = ZoneType.RESISTANCE if current[0].type == ZoneType.SUPPORT else ZoneType.SUPPORT
+            extreme = candle.high if opposite == ZoneType.RESISTANCE else candle.low
+            provisional = Reversal(opposite, extreme, index, index+1)
+            prior = self._recent[-1] if self._recent else None
+            local_extreme = prior is not None and (extreme > prior.high if opposite == ZoneType.RESISTANCE
+                                                  else extreme < prior.low)
+            eligible = any(zone.id != current[0].id and (
+                ReturnReversalDetector.detect(zone,provisional,candle,candle,candle)
+                or RoleChangeDetector.detect(zone,provisional,candle,candle,candle))
+                for zone in pending.zones)
+            if not local_extreme or not eligible:
+                raise _OriginBroken(current[0], current[1], index, candle)
+            defer_origin = True
+            pending.pending_origin_break = {"zone_id":current[0].id,"interaction_id":current[1].id,
+                "origin_type":current[0].type.value,"break_index":index,"candle":asdict(candle)}
+            events.append("origin_break_waiting_for_c3")
         pre_break = self._snapshots.capture(pending.zones, index, self.year_candles)
         if current is not None:
             records = self._breaks.process(current[1], current[0], pending.zones,
@@ -268,10 +300,11 @@ class ReplayEngine:
         # no origin energy or BreakEvidence is fabricated for these events.
         for zone in pending.zones:
             if BreakDetector.is_broken(zone, candle):
-                pending.unattributed_breaks.append({
-                    "zone_id": zone.id, "candle_index": index,
-                    "close": candle.close, "reason": "no_confirmed_origin",
-                })
+                if not (defer_origin and zone.id == current[0].id):
+                    pending.unattributed_breaks.append({
+                        "zone_id": zone.id, "candle_index": index,
+                        "close": candle.close, "reason": "no_confirmed_origin",
+                    })
                 energy, median = pre_break.reference_for_break(zone.id)
                 pending.pending_c2_breaks.append({
                     "break_index": index, "datetime": candle.datetime,
@@ -286,7 +319,8 @@ class ReplayEngine:
                              "created_at_index": zone.created_at_index},
                 })
                 zone.state = ZoneState.BROKEN
-                events.append("unattributed_break")
+                if not (defer_origin and zone.id == current[0].id):
+                    events.append("unattributed_break")
             ZonePriceSideUpdater.update(zone, PriceSideDetector.detect(zone, candle.close))
         self._current(pending)
         self.state = pending

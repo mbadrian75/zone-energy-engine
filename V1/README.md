@@ -90,7 +90,16 @@ creation index wins. Tied candidates abort the candle without partial state.
 Dual high/low patterns select the opposite of the current reaction type; without
 a previous reaction they remain unresolved.
 
-If the current origin zone breaks before a confirmed opposite reaction, only
+If the current origin zone breaks before a confirmed opposite reaction,
+invalidation can wait one candle when the break candle also has a prospective
+opposite extreme inside an eligible existing zone. The physical break and its
+pre-break energy snapshot remain at that original candle. If C3 confirms an
+opposite reaction with a close outside its zone, the outgoing interaction owns
+the saved break and the preceding reaction remains valid. Otherwise ordinary
+invalidation replay restores the preceding origin. A final unresolved case stays
+in `pending_origin_break`; accepted cases are audited in `resolved_origin_breaks`.
+
+If the current origin breaks without this simultaneous opposite-zone candidate, only
 its latest reaction is invalidated. Replay restores the preceding origin and
 reconstructs candles from before the invalid reaction, including intervening
 break snapshots. The zone remains present and becomes BROKEN, with its earlier
