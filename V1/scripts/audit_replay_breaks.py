@@ -38,6 +38,31 @@ def inspect(engine, pending, index, candle):
     return rows
 
 
+def pending_reaction_report(state, index, last_candle):
+    candidate = state.pending_reaction
+    if candidate is None:
+        return None
+    zone = next(zone for zone in state.zones if zone.id == candidate["zone_id"])
+    reversal = candidate["reversal"]
+    support = reversal["type"] == ZoneType.SUPPORT
+    opened = [(item.id,move.id,move.start_index) for item in state.zones for move in item.interactions
+              if move.state.value == "open"]
+    return {"zone_id":zone.id,"zone_state":zone.state.value,
+            "reaction_type":reversal["type"],"reaction_index":reversal["extreme_index"],
+            "reaction_datetime":candidate["c2"]["datetime"],
+            "reaction_extreme":reversal["extreme_price"],
+            "pattern_confirmation_index":reversal["detection_index"],
+            "zone_lower":zone.lower_price,"zone_upper":zone.upper_price,
+            "confirmation_close_condition":"close > upper" if support else "close < lower",
+            "rejection_close_condition":"close < lower" if support else "close > upper",
+            "last_index":index,"last_datetime":last_candle.datetime,"last_close":last_candle.close,
+            "candles_since_pattern":index-reversal["detection_index"],
+            "current_origin_zone_id":opened[0][0] if opened else None,
+            "current_interaction_id":opened[0][1] if opened else None,
+            "current_origin_index":opened[0][2] if opened else None,
+            "status":"waiting_for_close_outside_zone"}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", required=True)
@@ -111,6 +136,9 @@ def main():
         for report in engine.state.rejected_reactions:
             print(json.dumps(report, ensure_ascii=False, default=str))
         print(f"Pending reactions: {int(engine.state.pending_reaction is not None)}")
+        waiting = pending_reaction_report(engine.state,args.index,candles[args.index])
+        if waiting is not None:
+            print(json.dumps(waiting, ensure_ascii=False, default=str))
         print(f"Pending origin breaks: {int(engine.state.pending_origin_break is not None)}")
         print(f"Resolved origin breaks: {len(engine.state.resolved_origin_breaks)}")
         for report in engine.state.resolved_origin_breaks:
