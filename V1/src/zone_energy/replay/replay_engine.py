@@ -120,6 +120,16 @@ class ReplayEngine:
             events = []
             for bar in self._reaction_window + (candle,):
                 events = staged.process(bar)
+                if bar.datetime == broken.candle.datetime:
+                    # The seed can precede multiple reactions confirmed together.
+                    # Report the reconstructed origin at the original break,
+                    # rather than the origin before replaying that window.
+                    actual = self._current(staged.state)
+                    report = next(entry for entry in staged.state.invalidated_reactions
+                                  if entry["interaction_id"] == broken.interaction.id
+                                  and entry["break_index"] == broken.index)
+                    report["restored_origin_zone_id"] = actual[0].id if actual else None
+                    report["restored_interaction_id"] = actual[1].id if actual else None
             events = ["reaction_invalidated", *events]
         else:
             current = self._current(staged.state)
