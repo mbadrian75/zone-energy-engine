@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from zone_energy.config import EngineConfig, EngineTimeframe
 from zone_energy.engine.zone_boundary_service import ZoneBoundaryService
 from zone_energy.engine.reversal_detector import ReversalDetector
+from zone_energy.engine.interaction_time_decay_calculator import InteractionTimeDecayCalculator
 from zone_energy.models import ZoneType
 from zone_energy.replay.replay_engine import ReplayEngine
 
@@ -84,6 +85,43 @@ def zone_contacts(state, candle, index):
             "contacted_zones_before_processing":rows}
 
 
+class EnergySnapshotAudit:
+    """Observe actual pre-break snapshots without changing engine inputs or outputs."""
+    def __init__(self, delegate, config, zone_id, index, reports):
+        self.delegate,self.config = delegate,config
+        self.zone_id,self.index,self.reports = zone_id,index,reports
+
+    def capture(self,zones,index,year_candles):
+        history = list(zones)
+        snapshot = self.delegate.capture(history,index,year_candles)
+        if index == self.index and any(key == self.zone_id for key,_ in snapshot.zone_energies):
+            zone = next(zone for zone in history if zone.id == self.zone_id)
+            decay = InteractionTimeDecayCalculator(self.config)
+            interactions = []
+            for move in zone.interactions:
+                age,weight,_ = decay.calculate(None,move.start_index,index,year_candles)
+                closed = move.state.value == "closed"
+                contribution = decay.evaluate(move,index,year_candles)[2] if closed else None
+                interactions.append({"interaction_id":move.id,"state":move.state.value,
+                    "start_index":move.start_index,"end_index":move.end_index,
+                    "previous_distance":move.previous_distance,"previous_time":move.previous_movement_time,
+                    "distance":move.distance,"movement_time":move.movement_time,
+                    "movement_energy":move.movement_energy,"total_break_evidence":move.total_break_evidence,
+                    "base_energy":move.base_energy,"age":age,"time_weight":weight,
+                    "effective_contribution":contribution,"included_in_sum":closed and contribution is not None,
+                    "exclusion_reason":("open_not_finalized" if not closed else
+                                         "undefined_finalized_energy" if contribution is None else None)})
+            energy,median = snapshot.reference_for_break(self.zone_id)
+            self.reports.append({"zone_id":zone.id,"candle_index":index,"state":"active",
+                "zone_type":zone.type.value,"creation_index":zone.creation_index,
+                "effective_zone_energy":energy,"median_active_energy":median,
+                "interactions":interactions,
+                "zero_reason":("no_finalized_interactions" if energy == 0 and
+                                 not any(item["state"] == "closed" for item in interactions) else
+                                 "defined_contributions_sum_to_zero" if energy == 0 else None)})
+        return snapshot
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", required=True)
@@ -94,9 +132,15 @@ def main():
                         help="Compare each break candle with the next C3 confirmation, read only")
     parser.add_argument("--inspect-range", type=int, nargs=2, metavar=("FIRST","LAST"),
                         help="Show all zone contacts using historical roles before each candle")
+    parser.add_argument("--zone-energy",type=int,help="Inspect a zone's actual pre-break energy snapshot")
+    parser.add_argument("--energy-index",type=int,help="Original break index for --zone-energy")
     args = parser.parse_args()
     if args.inspect_range and not 0 <= args.inspect_range[0] <= args.inspect_range[1] <= args.index:
         parser.error("inspect-range must be an ordered range within the checkpoint")
+    if (args.zone_energy is None) != (args.energy_index is None):
+        parser.error("zone-energy and energy-index must be provided together")
+    if args.energy_index is not None and not 0 <= args.energy_index <= args.index:
+        parser.error("energy-index must be within the checkpoint")
     from zone_energy.data import EngineResultsRepository, MarketDataRepository
     uri = os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/")
     market = MarketDataRepository(uri, args.database)
@@ -111,6 +155,10 @@ def main():
         values["timeframe"] = EngineTimeframe(values["timeframe"])
         config = EngineConfig(**values)
         engine = ReplayEngine(config, document["year_candles"], ZoneBoundaryService(market, config))
+        energy_reports = []
+        if args.zone_energy is not None:
+            engine._snapshots = EnergySnapshotAudit(engine._snapshots,config,args.zone_energy,args.energy_index,energy_reports)
+            engine._breaks._snapshots = EnergySnapshotAudit(engine._breaks._snapshots,config,args.zone_energy,args.energy_index,energy_reports)
         rows = {}
         candles = []
         contacts = []
@@ -143,6 +191,23 @@ def main():
                 or engine._last_datetime != context["candle_datetime"]):
             raise ValueError("Reconstructed history differs from checkpoint; report withheld")
         print("Checkpoint reconstruction: MATCH")
+        if args.zone_energy is not None:
+            records = [record for zone in engine.state.zones for move in zone.interactions for record in move.breaks
+                       if record.broken_zone_id == args.zone_energy and record.break_index == args.energy_index]
+            if len(records) != 1:
+                raise ValueError("Selected break record not uniquely found")
+            record = records[0]
+            matching = [report for report in energy_reports
+                        if report["effective_zone_energy"] == record.broken_zone_energy_at_break
+                        and report["median_active_energy"] == record.median_active_zone_energy_at_break]
+            if not matching:
+                raise ValueError("Observed pre-break snapshot differs from stored references")
+            print("Zone energy at original break: MATCH")
+            print(json.dumps(matching[-1],ensure_ascii=False,default=str))
+            print(json.dumps({"break_index":record.break_index,"break_close":record.break_close,
+                "stored_energy":record.broken_zone_energy_at_break,"stored_median":record.median_active_zone_energy_at_break,
+                "barrier_ratio":record.barrier_ratio,"barrier_cost":record.barrier_cost,
+                "break_evidence":record.break_evidence},ensure_ascii=False))
         if args.inspect_range:
             print("Historical zone contacts (observed before each candle; contact alone is not a confirmed reaction):")
             for report in contacts:
