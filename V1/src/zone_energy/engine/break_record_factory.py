@@ -1,6 +1,7 @@
 from math import isfinite
 
 from zone_energy.config import EngineConfig
+from zone_energy.engine.barrier_calculator import EnergyOverflowError
 from zone_energy.engine.barrier_calculator import (
     BarrierCalculator,
 )
@@ -77,10 +78,19 @@ class BreakRecordFactory:
         if (broken_zone_energy_at_break is not None
                 and median_active_zone_energy_at_break is not None
                 and median_active_zone_energy_at_break > 0):
-            barrier_ratio, barrier_cost = self._barrier_calculator.calculate(
-                zone_energy=broken_zone_energy_at_break,
-                median_active_energy=median_active_zone_energy_at_break,
-            )
+            try:
+                barrier_ratio, barrier_cost = self._barrier_calculator.calculate(
+                    zone_energy=broken_zone_energy_at_break,
+                    median_active_energy=median_active_zone_energy_at_break,
+                )
+            except EnergyOverflowError as error:
+                finalized = [(move.id,move.start_index,move.end_index,move.base_energy)
+                             for move in zone.interactions if move.state.value == "closed"]
+                raise EnergyOverflowError(
+                    f"{error}; break_index={break_index}, datetime={break_candle.datetime.isoformat()}, "
+                    f"broken_zone_id={zone.id}, broken_zone_type={zone.type.value}, "
+                    f"origin_zone_id={interaction.zone_id}, interaction_id={interaction.id}, "
+                    f"origin_index={interaction.start_index}, zone_finalized_energies={finalized!r}") from error
 
         (
             break_time_from_origin,

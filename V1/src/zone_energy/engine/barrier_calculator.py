@@ -1,4 +1,9 @@
 from zone_energy.config import EngineConfig
+from math import isfinite, log10
+
+
+class EnergyOverflowError(ValueError):
+    """The configured formula exceeds the finite numeric representation."""
 
 
 class BarrierCalculator:
@@ -19,12 +24,12 @@ class BarrierCalculator:
         median_active_energy: float,
     ) -> tuple[float, float]:
 
-        if zone_energy < 0:
+        if not isfinite(zone_energy) or zone_energy < 0:
             raise ValueError(
                 "zone_energy cannot be negative"
             )
 
-        if median_active_energy <= 0:
+        if not isfinite(median_active_energy) or median_active_energy <= 0:
             raise ValueError(
                 "median_active_energy must be greater than zero"
             )
@@ -39,10 +44,18 @@ class BarrierCalculator:
             / median_active_energy
         )
 
-        barrier_cost = (
-            barrier_ratio
-            ** self._config.barrier_exponent
-        )
+        exponent = self._config.barrier_exponent
+        if not isfinite(exponent) or exponent <= 0:
+            raise ValueError("barrier_exponent must be finite and positive")
+        try:
+            barrier_cost = barrier_ratio ** exponent
+        except OverflowError:
+            barrier_cost = float("inf")
+        if not isfinite(barrier_ratio) or not isfinite(barrier_cost):
+            magnitude = exponent * (log10(zone_energy)-log10(median_active_energy))
+            raise EnergyOverflowError(
+                f"Barrier overflow: zone_energy={zone_energy!r}, median_active_energy={median_active_energy!r}, "
+                f"barrier_ratio={barrier_ratio!r}, exponent={exponent!r}, log10_barrier_cost={magnitude!r}")
 
         return (
             barrier_ratio,
