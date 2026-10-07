@@ -1,0 +1,46 @@
+Actual reference-year candles: 5905
+Run ID: replay-329b3843267f485f8bbc86b9aef38e19
+Traceback (most recent call last):
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\scripts\run_replay.py", line 55, in <module>
+    main()
+    ~~~~^^
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\scripts\run_replay.py", line 45, in main
+    summary = runner.run(start=args.start, end=args.end, run_id=run_id,
+                         checkpoint_every=args.checkpoint_every)
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\replay\replay_runner.py", line 50, in run
+    self.engine.process(candle, before_commit=checkpoint)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\replay\replay_engine.py", line 95, in process
+    events = staged._process_once(candle)
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\replay\replay_engine.py", line 305, in _process_once
+    records = self._breaks.process(current[1], current[0], pending.zones,
+                                   candle, index, self.year_candles)
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\engine\break_processor.py", line 61, in process
+    record = self._records.create_from_snapshot(
+        zone, interaction, candle, candle_index, snapshot,
+    )
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\engine\break_record_factory.py", line 54, in create_from_snapshot
+    return self.create(
+           ~~~~~~~~~~~^
+        zone=zone,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        median_active_zone_energy_at_break=median_energy,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\engine\break_record_factory.py", line 80, in create
+    barrier_ratio, barrier_cost = self._barrier_calculator.calculate(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        zone_energy=broken_zone_energy_at_break,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        median_active_energy=median_active_zone_energy_at_break,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\engine\barrier_calculator.py", line 43, in calculate
+    barrier_ratio
+    ~~~~~~~~~~~~~
+    ** self._config.barrier_exponent
+    ^^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+OverflowError: (34, 'Result too large')
