@@ -63,6 +63,27 @@ def pending_reaction_report(state, index, last_candle):
             "status":"waiting_for_close_outside_zone"}
 
 
+def zone_contacts(state, candle, index):
+    """Report contact using roles and states known before processing this candle."""
+    rows = []
+    for zone in state.zones:
+        if zone.created_at_index > index or candle.high < zone.lower_price or candle.low > zone.upper_price:
+            continue
+        side = ("below" if candle.close < zone.lower_price else
+                "above" if candle.close > zone.upper_price else "inside")
+        rows.append({"zone_id":zone.id,"type_before_candle":zone.type.value,
+            "state_before_candle":zone.state.value,"creation_index":zone.creation_index,
+            "lower":zone.lower_price,"upper":zone.upper_price,
+            "contains_high":zone.lower_price <= candle.high <= zone.upper_price,
+            "contains_low":zone.lower_price <= candle.low <= zone.upper_price,
+            "close_side":side,
+            "last_external_side_before_candle":(zone.last_external_price_side.value
+                if zone.last_external_price_side is not None else None)})
+    return {"candle_index":index,"datetime":candle.datetime.isoformat(),
+            "open":candle.open,"high":candle.high,"low":candle.low,"close":candle.close,
+            "contacted_zones_before_processing":rows}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", required=True)
@@ -71,7 +92,11 @@ def main():
     parser.add_argument("--database", default="market_data")
     parser.add_argument("--check-c3", action="store_true",
                         help="Compare each break candle with the next C3 confirmation, read only")
+    parser.add_argument("--inspect-range", type=int, nargs=2, metavar=("FIRST","LAST"),
+                        help="Show all zone contacts using historical roles before each candle")
     args = parser.parse_args()
+    if args.inspect_range and not 0 <= args.inspect_range[0] <= args.inspect_range[1] <= args.index:
+        parser.error("inspect-range must be an ordered range within the checkpoint")
     from zone_energy.data import EngineResultsRepository, MarketDataRepository
     uri = os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/")
     market = MarketDataRepository(uri, args.database)
@@ -88,6 +113,7 @@ def main():
         engine = ReplayEngine(config, document["year_candles"], ZoneBoundaryService(market, config))
         rows = {}
         candles = []
+        contacts = []
         def collect(pending, index, bar):
             retained = {(event["zone_id"], event["candle_index"]) for event in pending.unattributed_breaks}
             for key in list(rows):
@@ -96,6 +122,9 @@ def main():
             for row in inspect(engine, pending, index, bar):
                 rows[(row["zone_id"], row["candle_index"])] = row
         for candle in market.stream_candles(args.timeframe, context["start"], context["end"]):
+            next_index = engine.current_index+1
+            if args.inspect_range and args.inspect_range[0] <= next_index <= args.inspect_range[1]:
+                contacts.append(zone_contacts(engine.state,candle,next_index))
             engine.process(candle, before_commit=collect)
             candles.append(candle)
             if engine.current_index == args.index:
@@ -114,6 +143,16 @@ def main():
                 or engine._last_datetime != context["candle_datetime"]):
             raise ValueError("Reconstructed history differs from checkpoint; report withheld")
         print("Checkpoint reconstruction: MATCH")
+        if args.inspect_range:
+            print("Historical zone contacts (observed before each candle; contact alone is not a confirmed reaction):")
+            for report in contacts:
+                index = report["candle_index"]
+                report["retained_reactions"] = [entry for entry in engine.state.reaction_confirmations
+                                                 if entry["reaction_index"] == index]
+                report["invalidated_reactions"] = [{"zone_id":entry["zone_id"],
+                    "reaction_type":entry["reaction_type"],"break_index":entry["break_index"]}
+                    for entry in engine.state.invalidated_reactions if entry["reaction_index"] == index]
+                print(json.dumps(report, ensure_ascii=False, default=str))
         print(f"Unattributed breaks: {len(rows)}")
         confirmation_counts = {}
         for row in sorted(rows.values(), key=lambda row: (row["candle_index"], row["zone_id"])):
