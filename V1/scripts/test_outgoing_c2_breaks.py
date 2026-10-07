@@ -82,7 +82,7 @@ class OutgoingC2Tests(unittest.TestCase):
             self.assertEqual(record.broken_zone_energy_at_break,energy)
             self.assertEqual(record.median_active_zone_energy_at_break,median)
             self.assertAlmostEqual(record.displacement,2.124)
-            self.assertAlmostEqual(record.break_evidence,4)
+            self.assertAlmostEqual(record.break_evidence,1)
             self.assertEqual(engine.state.unattributed_breaks,[])
             self.assertEqual(engine.state.pending_c2_breaks,[])
             report = engine.state.confirmed_c2_breaks[0]

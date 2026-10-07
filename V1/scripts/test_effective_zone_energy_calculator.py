@@ -51,9 +51,9 @@ class EffectiveZoneEnergyCalculatorTests(unittest.TestCase):
 
     def test_empty_and_open_only_have_no_finalized_contribution(self):
         zone = make_zone()
-        self.assertEqual(self.calculator.calculate(zone, 100, 1000), 0)
+        self.assertIsNone(self.calculator.calculate(zone, 100, 1000))
         zone.interactions = [Interaction(1, 1, InteractionState.OPEN, 100, 50)]
-        self.assertEqual(self.calculator.calculate(zone, 100, 1000), 0)
+        self.assertIsNone(self.calculator.calculate(zone, 100, 1000))
         zone.interactions.append(closed(2, 0, 100))
         self.assertAlmostEqual(self.calculator.calculate(zone, 1000, 1000), 5)
 
@@ -63,6 +63,11 @@ class EffectiveZoneEnergyCalculatorTests(unittest.TestCase):
         self.assertEqual(self.calculator.calculate(zone, 1000, 1000), 5)
         zone.interactions = [closed(2, 500, None)]
         self.assertIsNone(self.calculator.calculate(zone, 1000, 1000))
+
+    def test_defined_zero_remains_zero_with_an_open_reaction(self):
+        zone = make_zone()
+        zone.interactions = [closed(1,0,0),Interaction(2,1,InteractionState.OPEN,100,50)]
+        self.assertEqual(self.calculator.calculate(zone,100,1000),0)
 
     def test_invalid_empty_zone_time_inputs(self):
         for now, year in ((0, 1000), (100, 0), (100, 2.5), (-1, 1000)):

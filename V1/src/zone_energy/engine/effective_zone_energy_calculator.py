@@ -29,7 +29,6 @@ class EffectiveZoneEnergyCalculator:
             raise ValueError("Zone is not confirmed at the requested candle")
 
         energies = []
-        undefined = False
         seen = set()
         for interaction in zone.interactions:
             if interaction.zone_id != zone.id:
@@ -46,12 +45,10 @@ class EffectiveZoneEnergyCalculator:
             _, _, energy = self._decay.evaluate(
                 interaction, current_candle_index, year_candles,
             )
-            if energy is None:
-                undefined = True
-            else:
+            if energy is not None:
                 energies.append(energy)
 
-        if undefined and not energies:
+        if not energies:
             return None
         try:
             return fsum(energies)

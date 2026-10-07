@@ -25,13 +25,13 @@ class BootstrapLifecycleTests(unittest.TestCase):
         origin = create(zones, 2, ZoneType.RESISTANCE, 130, 20)
         interaction = origin.interactions[0]
         snapshot = MarketEnergySnapshotCalculator(EngineConfig()).capture(zones, 25, 1000)
-        self.assertEqual(snapshot.median_active_energy, 0)
+        self.assertIsNone(snapshot.median_active_energy)
         candle = Candle(datetime(2025, 1, 1), 95, 96, 89, 90, 0)
         records = BreakProcessor(EngineConfig()).process(interaction, origin, zones, candle, 25, 1000)
         self.assertEqual(len(records), 1)
         record = records[0]
         self.assertIsNone(record.broken_zone_energy_at_break)
-        self.assertEqual(record.median_active_zone_energy_at_break, 0)
+        self.assertIsNone(record.median_active_zone_energy_at_break)
         self.assertIsNone(record.barrier_ratio)
         self.assertIsNone(record.barrier_cost)
         self.assertIsNone(record.break_evidence)
@@ -53,7 +53,7 @@ class BootstrapLifecycleTests(unittest.TestCase):
         snapshot = MarketEnergySnapshotCalculator(EngineConfig()).capture(zones, 31, 1000)
         energy = EffectiveZoneEnergyCalculator(EngineConfig()).calculate(scored, 31, 1000)
         self.assertIsNone(snapshot.zone_energies[0][1])
-        self.assertAlmostEqual(snapshot.median_active_energy, energy / 2)
+        self.assertAlmostEqual(snapshot.median_active_energy, energy)
 
 
 if __name__ == "__main__":

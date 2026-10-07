@@ -17,8 +17,8 @@ class EnergyAuditTests(unittest.TestCase):
         before = deepcopy(zone)
         snapshot = audit.capture([zone],879,5905)
         self.assertEqual(zone,before)
-        self.assertEqual(snapshot.reference_for_break(126),(0.0,0.0))
-        self.assertEqual(reports[-1]["zero_reason"],"no_finalized_interactions")
+        self.assertEqual(snapshot.reference_for_break(126),(None,None))
+        self.assertIsNone(reports[-1]["zero_reason"])
         self.assertEqual(reports[-1]["interactions"][0]["exclusion_reason"],"open_not_finalized")
         zone.interactions.insert(0,Interaction(240,126,InteractionState.CLOSED,2940.855,876,
                                              end_index=878,base_energy=5))

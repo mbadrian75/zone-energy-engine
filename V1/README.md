@@ -136,6 +136,11 @@ checkpoint into models is supported, but resuming mid-run is not yet implemented
 ## Save engine results in the candle database
 
 Bootstrap policy: undefined energy remains `None` in historical records.
+Zones with no defined finalized interaction energy, including empty and OPEN-only
+zones, also remain `None`. OPEN movement energy stays unfinalized until its result
+is known. Defined older closed contributions remain usable. A genuinely defined
+zero contribution remains numeric zero. Break snapshots with unknown zone energy
+retain unknown barrier cost and evidence; later finalization does not rescore them.
 Interaction/zone sums and the active-zone median use defined contributions
 only. A zone with only undefined closed energy remains undefined. A break
 with an unknown zone energy or a missing/zero median is still recorded and

@@ -116,6 +116,7 @@ class EnergySnapshotAudit:
                 "zone_type":zone.type.value,"creation_index":zone.creation_index,
                 "effective_zone_energy":energy,"median_active_energy":median,
                 "interactions":interactions,
+                "undefined_reason":("no_defined_finalized_contributions" if energy is None else None),
                 "zero_reason":("no_finalized_interactions" if energy == 0 and
                                  not any(item["state"] == "closed" for item in interactions) else
                                  "defined_contributions_sum_to_zero" if energy == 0 else None)})
