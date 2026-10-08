@@ -1,4 +1,5 @@
 import sys
+from math import log1p,isclose
 from pathlib import Path
 
 V1_ROOT = Path(__file__).resolve().parents[1]
@@ -21,7 +22,7 @@ def test_ratio_equal_one():
     )
 
     assert ratio == 1.0
-    assert cost == 1.0
+    assert isclose(cost, log1p(1))
 
     print("Barrier ratio = 1: PASS")
 
@@ -37,7 +38,7 @@ def test_ratio_above_one():
     )
 
     assert ratio == 2.0
-    assert cost == 4.0
+    assert isclose(cost, log1p(4))
 
     print("Barrier ratio > 1: PASS")
 
@@ -53,7 +54,7 @@ def test_ratio_below_one():
     )
 
     assert ratio == 0.5
-    assert cost == 0.25
+    assert isclose(cost, log1p(0.25))
 
     print("Barrier ratio < 1: PASS")
 

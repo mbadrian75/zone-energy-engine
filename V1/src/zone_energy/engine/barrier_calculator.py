@@ -1,5 +1,5 @@
 from zone_energy.config import EngineConfig
-from math import isfinite, log10
+from math import isfinite, log10, log, log1p, exp
 
 
 class EnergyOverflowError(ValueError):
@@ -17,6 +17,8 @@ class BarrierCalculator:
         config: EngineConfig,
     ) -> None:
         self._config = config
+        if config.barrier_cost_transform not in ("power","log1p"):
+            raise ValueError("Unsupported barrier cost transform")
 
     def calculate(
         self,
@@ -47,15 +49,21 @@ class BarrierCalculator:
         exponent = self._config.barrier_exponent
         if not isfinite(exponent) or exponent <= 0:
             raise ValueError("barrier_exponent must be finite and positive")
-        try:
-            barrier_cost = barrier_ratio ** exponent
-        except OverflowError:
-            barrier_cost = float("inf")
+        # log(1 + ratio**exponent), evaluated without constructing the power.
+        # For exponent=2 this is the user-approved logarithmic barrier model.
+        log_power = exponent * (log(zone_energy)-log(median_active_energy))
+        barrier_cost = (log_power + log1p(exp(-log_power)) if log_power > 0
+                        else log1p(exp(log_power)))
+        if self._config.barrier_cost_transform == "power":
+            try:
+                barrier_cost = barrier_ratio ** exponent
+            except OverflowError:
+                barrier_cost = float("inf")
         if not isfinite(barrier_ratio) or not isfinite(barrier_cost):
             magnitude = exponent * (log10(zone_energy)-log10(median_active_energy))
             raise EnergyOverflowError(
                 f"Barrier overflow: zone_energy={zone_energy!r}, median_active_energy={median_active_energy!r}, "
-                f"barrier_ratio={barrier_ratio!r}, exponent={exponent!r}, log10_barrier_cost={magnitude!r}")
+                f"barrier_ratio={barrier_ratio!r}, exponent={exponent!r}, log10_power={magnitude!r}")
 
         return (
             barrier_ratio,

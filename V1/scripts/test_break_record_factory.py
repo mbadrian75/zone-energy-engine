@@ -89,8 +89,7 @@ def test_complete_break_record():
     # 20 / 10 = 2
     assert record.barrier_ratio == 2.0
 
-    # 2^2 = 4
-    assert record.barrier_cost == 4.0
+    assert math.isclose(record.barrier_cost, math.log1p(4))
 
     # 115 - 110 = 5
     assert record.displacement == 5.0
@@ -102,7 +101,7 @@ def test_complete_break_record():
     assert record.persistence == 1.5
 
     expected_break_evidence = (
-        4.0
+        math.log1p(4)
         * (
             1.0
             + 1.5
@@ -181,7 +180,7 @@ def test_bootstrap_break_record():
 
     # Other break measurements still exist.
     assert record.barrier_ratio == 2.0
-    assert record.barrier_cost == 4.0
+    assert math.isclose(record.barrier_cost, math.log1p(4))
     assert record.displacement == 5.0
     assert record.displacement_ratio == 0.5
 

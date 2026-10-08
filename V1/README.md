@@ -136,6 +136,13 @@ checkpoint into models is supported, but resuming mid-run is not yet implemented
 ## Save engine results in the candle database
 
 Bootstrap policy: undefined energy remains `None` in historical records.
+Barrier calibration now uses `ln(1 + BarrierRatio ** barrier_exponent)` (default
+exponent 2), replacing the unbounded squared cost after annual stress testing
+revealed recursive energy amplification. The logarithm is evaluated in log space
+so the intermediate power cannot overflow. This changes energy values and market
+medians; use a fresh run ID. Existing immutable checkpoints retain their original
+calibration: `barrier_cost_transform` is stored per run, and audit tools treat
+older checkpoints without this field as the original `power` calibration.
 Zones with no defined finalized interaction energy, including empty and OPEN-only
 zones, also remain `None`. OPEN movement energy stays unfinalized until its result
 is known. Defined older closed contributions remain usable. A genuinely defined

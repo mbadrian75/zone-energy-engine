@@ -153,6 +153,7 @@ def main():
             raise ValueError("Checkpoint not found")
         context = document["replay_context"]
         values = dict(document["config"])
+        values.setdefault("barrier_cost_transform","power")
         values["timeframe"] = EngineTimeframe(values["timeframe"])
         config = EngineConfig(**values)
         engine = ReplayEngine(config, document["year_candles"], ZoneBoundaryService(market, config))

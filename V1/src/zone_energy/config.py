@@ -23,6 +23,7 @@ class EngineConfig:
 
     # Break barrier
     barrier_exponent: float = 2.0
+    barrier_cost_transform: str = "log1p"
 
     # Time decay
     yearly_remaining_weight: float = 0.05

@@ -120,12 +120,12 @@ class ReturnMoveReferenceTests(unittest.TestCase):
                                                         break_candle, 32, 1000)
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].persistence, 0.2)
-        self.assertAlmostEqual(records[0].break_evidence, 1 + 0.2 * math.log1p(2))
+        self.assertAlmostEqual(records[0].break_evidence, math.log1p(1) * (1 + 0.2 * math.log1p(2)))
         destination = make_zone(4, ZoneType.RESISTANCE, 160, 35)
         history.append(destination)
         InteractionFinalizer.finalize(current, origin, destination, history, 36)
         self.assertEqual(current.previous_movement_time, 10)
-        self.assertAlmostEqual(current.base_energy, 5 + 0.2 * math.log1p(2))
+        self.assertAlmostEqual(current.base_energy, 4 + math.log1p(1) * (1 + 0.2 * math.log1p(2)))
 
     def test_invalid_reference_does_not_append_reaction(self):
         origin, source, reversal, c1, c2, c3 = return_case()
