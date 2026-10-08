@@ -1,0 +1,12 @@
+Actual reference-year candles: 5905
+Run ID: replay-0ed399917e9e400a8c2944103eee8c09
+candles: 5905
+zones: 563
+unattributed_breaks: 0
+invalidated_reactions: 71
+confirmed_c2_breaks: 19
+pending_reactions: 0
+pending_origin_breaks: 0
+resolved_origin_breaks: 19
+rejected_reactions: 335
+last_checkpoint: ["replay-0ed399917e9e400a8c2944103eee8c09","XAUUSD","H1",5904]
