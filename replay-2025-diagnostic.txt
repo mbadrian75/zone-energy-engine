@@ -1,0 +1,54 @@
+Actual reference-year candles: 5905
+Run ID: replay-61305293b2964cc3b63f2e8403c1c386
+Traceback (most recent call last):
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\engine\break_record_factory.py", line 82, in create
+    barrier_ratio, barrier_cost = self._barrier_calculator.calculate(
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        zone_energy=broken_zone_energy_at_break,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        median_active_energy=median_active_zone_energy_at_break,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\engine\barrier_calculator.py", line 56, in calculate
+    raise EnergyOverflowError(
+        f"Barrier overflow: zone_energy={zone_energy!r}, median_active_energy={median_active_energy!r}, "
+        f"barrier_ratio={barrier_ratio!r}, exponent={exponent!r}, log10_barrier_cost={magnitude!r}")
+zone_energy.engine.barrier_calculator.EnergyOverflowError: Barrier overflow: zone_energy=5.687846631848622e+205, median_active_energy=13.315524300732074, barrier_ratio=4.271590440893048e+204, exponent=2.0, log10_barrier_cost=409.26117921192355
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\scripts\run_replay.py", line 55, in <module>
+    main()
+    ~~~~^^
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\scripts\run_replay.py", line 45, in main
+    summary = runner.run(start=args.start, end=args.end, run_id=run_id,
+                         checkpoint_every=args.checkpoint_every)
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\replay\replay_runner.py", line 50, in run
+    self.engine.process(candle, before_commit=checkpoint)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\replay\replay_engine.py", line 95, in process
+    events = staged._process_once(candle)
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\replay\replay_engine.py", line 305, in _process_once
+    records = self._breaks.process(current[1], current[0], pending.zones,
+                                   candle, index, self.year_candles)
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\engine\break_processor.py", line 61, in process
+    record = self._records.create_from_snapshot(
+        zone, interaction, candle, candle_index, snapshot,
+    )
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\engine\break_record_factory.py", line 55, in create_from_snapshot
+    return self.create(
+           ~~~~~~~~~~~^
+        zone=zone,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        median_active_zone_energy_at_break=median_energy,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Project\zone-energy-engine\zone-energy-engine\V1\src\zone_energy\engine\break_record_factory.py", line 89, in create
+    raise EnergyOverflowError(
+    ...<3 lines>...
+        f"origin_index={interaction.start_index}, zone_finalized_energies={finalized!r}") from error
+zone_energy.engine.barrier_calculator.EnergyOverflowError: Barrier overflow: zone_energy=5.687846631848622e+205, median_active_energy=13.315524300732074, barrier_ratio=4.271590440893048e+204, exponent=2.0, log10_barrier_cost=409.26117921192355; break_index=3131, datetime=2025-07-14T10:00:00, broken_zone_id=310, broken_zone_type=support, origin_zone_id=296, interaction_id=866, origin_index=3127, zone_finalized_energies=[(815, 2949, 2951, 1.8283487517424715), (861, 3111, 3116, 5.745851721280468e+205)]
