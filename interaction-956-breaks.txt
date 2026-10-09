@@ -1,0 +1,1138 @@
+Checkpoint reconstruction: MATCH
+Read-only reconstruction through index: 3455
+{
+  "zone_id": 328,
+  "zone_type_at_inspection": "support",
+  "interaction": {
+    "id": 956,
+    "zone_id": 328,
+    "state": "closed",
+    "start_price": 3284.998,
+    "start_index": 3446,
+    "end_price": 3354.955,
+    "end_index": 3453,
+    "distance": 69.95699999999988,
+    "movement_time": 7,
+    "previous_distance": 15.150000000000091,
+    "previous_movement_time": 2,
+    "breaks": [
+      {
+        "broken_zone_id": 269,
+        "break_index": 3451,
+        "break_close": 3341.015,
+        "break_time_from_origin": 5,
+        "broken_zone_energy_at_break": 46.189850213583675,
+        "median_active_zone_energy_at_break": 2.1764892177380113,
+        "barrier_ratio": 21.22218196035357,
+        "barrier_cost": 6.112311788084764,
+        "displacement": 2.9099999999998545,
+        "displacement_ratio": 0.2466101694915093,
+        "persistence": 2.5,
+        "break_evidence": 9.480623493152475
+      },
+      {
+        "broken_zone_id": 279,
+        "break_index": 3451,
+        "break_close": 3341.015,
+        "break_time_from_origin": 5,
+        "broken_zone_energy_at_break": 16.25383584405461,
+        "median_active_zone_energy_at_break": 2.1764892177380113,
+        "barrier_ratio": 7.467914709426839,
+        "barrier_cost": 4.039003615328201,
+        "displacement": 22.909999999999854,
+        "displacement_ratio": 3.1297814207649375,
+        "persistence": 2.5,
+        "break_evidence": 18.359538128756615
+      },
+      {
+        "broken_zone_id": 283,
+        "break_index": 3451,
+        "break_close": 3341.015,
+        "break_time_from_origin": 5,
+        "broken_zone_energy_at_break": 21.4417984072431,
+        "median_active_zone_energy_at_break": 2.1764892177380113,
+        "barrier_ratio": 9.851552781652279,
+        "barrier_cost": 4.585509089214739,
+        "displacement": 38.04999999999973,
+        "displacement_ratio": 4.909677419354804,
+        "persistence": 2.5,
+        "break_evidence": 24.951947375213102
+      },
+      {
+        "broken_zone_id": 290,
+        "break_index": 3451,
+        "break_close": 3341.015,
+        "break_time_from_origin": 5,
+        "broken_zone_energy_at_break": 31.172400050827914,
+        "median_active_zone_energy_at_break": 2.1764892177380113,
+        "barrier_ratio": 14.32233148539319,
+        "barrier_cost": 5.328503055640803,
+        "displacement": 20.029999999999745,
+        "displacement_ratio": 2.0886339937434246,
+        "persistence": 2.5,
+        "break_evidence": 20.35127054528489
+      },
+      {
+        "broken_zone_id": 292,
+        "break_index": 3451,
+        "break_close": 3341.015,
+        "break_time_from_origin": 5,
+        "broken_zone_energy_at_break": 32.46451180231315,
+        "median_active_zone_energy_at_break": 2.1764892177380113,
+        "barrier_ratio": 14.915999370790805,
+        "barrier_cost": 5.409353413398159,
+        "displacement": 2.949999999999818,
+        "displacement_ratio": 0.6659142212189452,
+        "persistence": 2.5,
+        "break_evidence": 12.311337498694947
+      },
+      {
+        "broken_zone_id": 247,
+        "break_index": 3453,
+        "break_close": 3345.655,
+        "break_time_from_origin": 7,
+        "broken_zone_energy_at_break": 29.279133298139723,
+        "median_active_zone_energy_at_break": 1.9154715864362155,
+        "barrier_ratio": 15.285600426271166,
+        "barrier_cost": 5.458093254007936,
+        "displacement": 3.1100000000001273,
+        "displacement_ratio": 0.4197031039136557,
+        "persistence": 3.5,
+        "break_evidence": 12.152811348448523
+      }
+    ],
+    "movement_energy": 1.3193210749646291,
+    "total_break_evidence": 97.60752838955055,
+    "base_energy": 98.92684946451519
+  },
+  "broken_zone_histories": [
+    {
+      "zone_id": 269,
+      "break_index": 3451,
+      "stored_energy": 46.189850213583675,
+      "stored_median": 2.1764892177380113,
+      "retained_movements_ending_by_break": [
+        {
+          "interaction_id": 646,
+          "start_index": 2311,
+          "end_index": 2314,
+          "movement_energy": 0.34991119005328164,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.34991119005328164,
+          "breaks": []
+        },
+        {
+          "interaction_id": 648,
+          "start_index": 2320,
+          "end_index": 2322,
+          "movement_energy": 2.2023121387283373,
+          "total_break_evidence": 0.0,
+          "base_energy": 2.2023121387283373,
+          "breaks": []
+        },
+        {
+          "interaction_id": 653,
+          "start_index": 2342,
+          "end_index": 2344,
+          "movement_energy": 1.3707109283196153,
+          "total_break_evidence": 0.0,
+          "base_energy": 1.3707109283196153,
+          "breaks": []
+        },
+        {
+          "interaction_id": 670,
+          "start_index": 2403,
+          "end_index": 2413,
+          "movement_energy": 0.30285040149179815,
+          "total_break_evidence": 0.440666659964788,
+          "base_energy": 0.7435170614565861,
+          "breaks": [
+            {
+              "broken_zone_id": 268,
+              "break_index": 2412,
+              "break_close": 3297.005,
+              "break_time_from_origin": 9,
+              "broken_zone_energy_at_break": 2.067797778259159,
+              "median_active_zone_energy_at_break": 3.0977319012817413,
+              "barrier_ratio": 0.6675199288239151,
+              "barrier_cost": 0.36851260035912,
+              "displacement": 0.36999999999989086,
+              "displacement_ratio": 0.04447115384613985,
+              "persistence": 4.5,
+              "break_evidence": 0.440666659964788
+            }
+          ]
+        },
+        {
+          "interaction_id": 783,
+          "start_index": 2799,
+          "end_index": 2802,
+          "movement_energy": 0.9548137493179875,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.9548137493179875,
+          "breaks": []
+        },
+        {
+          "interaction_id": 788,
+          "start_index": 2810,
+          "end_index": 2812,
+          "movement_energy": 3.0458408679927724,
+          "total_break_evidence": 8.568618964771174,
+          "base_energy": 11.614459832763947,
+          "breaks": [
+            {
+              "broken_zone_id": 255,
+              "break_index": 2812,
+              "break_close": 3301.625,
+              "break_time_from_origin": 2,
+              "broken_zone_energy_at_break": 5.414868704182456,
+              "median_active_zone_energy_at_break": 2.651582958610041,
+              "barrier_ratio": 2.0421268309179843,
+              "barrier_cost": 1.642927231240812,
+              "displacement": 2.1799999999998363,
+              "displacement_ratio": 0.13841269841268802,
+              "persistence": 1.0,
+              "break_evidence": 1.855907975281842
+            },
+            {
+              "broken_zone_id": 290,
+              "break_index": 2812,
+              "break_close": 3301.625,
+              "break_time_from_origin": 2,
+              "broken_zone_energy_at_break": 18.855538955237485,
+              "median_active_zone_energy_at_break": 2.651582958610041,
+              "barrier_ratio": 7.111049983939236,
+              "barrier_cost": 3.9428825511240126,
+              "displacement": 9.769999999999982,
+              "displacement_ratio": 1.0187695516162496,
+              "persistence": 1.0,
+              "break_evidence": 6.712710989489333
+            }
+          ]
+        },
+        {
+          "interaction_id": 792,
+          "start_index": 2829,
+          "end_index": 2835,
+          "movement_energy": 2.3440078310725827,
+          "total_break_evidence": 0.0,
+          "base_energy": 2.3440078310725827,
+          "breaks": []
+        },
+        {
+          "interaction_id": 795,
+          "start_index": 2851,
+          "end_index": 2853,
+          "movement_energy": 7.283477321814433,
+          "total_break_evidence": 3.192096906869397,
+          "base_energy": 10.475574228683831,
+          "breaks": [
+            {
+              "broken_zone_id": 267,
+              "break_index": 2853,
+              "break_close": 3347.898,
+              "break_time_from_origin": 2,
+              "broken_zone_energy_at_break": 11.593044420289875,
+              "median_active_zone_energy_at_break": 2.5766181752689694,
+              "barrier_ratio": 4.499325717548233,
+              "barrier_cost": 3.056071297536702,
+              "displacement": 1.443000000000211,
+              "displacement_ratio": 0.1685747663551659,
+              "persistence": 0.2857142857142857,
+              "break_evidence": 3.192096906869397
+            }
+          ]
+        },
+        {
+          "interaction_id": 798,
+          "start_index": 2862,
+          "end_index": 2876,
+          "movement_energy": 0.5875345648201616,
+          "total_break_evidence": 15.549045912815403,
+          "base_energy": 16.136580477635565,
+          "breaks": [
+            {
+              "broken_zone_id": 279,
+              "break_index": 2870,
+              "break_close": 3308.615,
+              "break_time_from_origin": 8,
+              "broken_zone_energy_at_break": 21.006721311938623,
+              "median_active_zone_energy_at_break": 2.5049794844280435,
+              "barrier_ratio": 8.38598537134728,
+              "barrier_cost": 4.267243401102574,
+              "displacement": 2.1700000000000728,
+              "displacement_ratio": 0.2964480874316973,
+              "persistence": 2.0,
+              "break_evidence": 6.483037569915373
+            },
+            {
+              "broken_zone_id": 283,
+              "break_index": 2871,
+              "break_close": 3294.065,
+              "break_time_from_origin": 9,
+              "broken_zone_energy_at_break": 23.80381420295733,
+              "median_active_zone_energy_at_break": 2.454221793219296,
+              "barrier_ratio": 9.69912917761722,
+              "barrier_cost": 4.554646140958748,
+              "displacement": 1.150000000000091,
+              "displacement_ratio": 0.14838709677420528,
+              "persistence": 2.25,
+              "break_evidence": 5.972536976377921
+            },
+            {
+              "broken_zone_id": 293,
+              "break_index": 2871,
+              "break_close": 3294.065,
+              "break_time_from_origin": 9,
+              "broken_zone_energy_at_break": 0.8160421260145413,
+              "median_active_zone_energy_at_break": 2.454221793219296,
+              "barrier_ratio": 0.332505451735928,
+              "barrier_cost": 0.10486428044419861,
+              "displacement": 11.110000000000127,
+              "displacement_ratio": 2.2340639453046904,
+              "persistence": 2.25,
+              "break_evidence": 0.38180182163160126
+            },
+            {
+              "broken_zone_id": 291,
+              "break_index": 2875,
+              "break_close": 3284.195,
+              "break_time_from_origin": 13,
+              "broken_zone_energy_at_break": 2.388832736298381,
+              "median_active_zone_energy_at_break": 2.4492465270860015,
+              "barrier_ratio": 0.975333724016954,
+              "barrier_cost": 0.6684834525698593,
+              "displacement": 9.002999999999702,
+              "displacement_ratio": 1.5611236344718682,
+              "persistence": 3.25,
+              "break_evidence": 2.711669544890508
+            }
+          ]
+        },
+        {
+          "interaction_id": 812,
+          "start_index": 2939,
+          "end_index": 2940,
+          "movement_energy": 3.5697522816167746,
+          "total_break_evidence": 0.0,
+          "base_energy": 3.5697522816167746,
+          "breaks": []
+        },
+        {
+          "interaction_id": 814,
+          "start_index": 2944,
+          "end_index": 2949,
+          "movement_energy": 1.2951104424536526,
+          "total_break_evidence": 0.015702406466746293,
+          "base_energy": 1.310812848920399,
+          "breaks": [
+            {
+              "broken_zone_id": 309,
+              "break_index": 2947,
+              "break_close": 3344.098,
+              "break_time_from_origin": 3,
+              "broken_zone_energy_at_break": 0.2660913473966432,
+              "median_active_zone_energy_at_break": 2.4290435586618924,
+              "barrier_ratio": 0.1095457289959951,
+              "barrier_cost": 0.011928834443563179,
+              "displacement": 2.199999999999818,
+              "displacement_ratio": 0.5246839971380175,
+              "persistence": 0.75,
+              "break_evidence": 0.015702406466746293
+            }
+          ]
+        },
+        {
+          "interaction_id": 816,
+          "start_index": 2951,
+          "end_index": 2958,
+          "movement_energy": 0.5251215024218029,
+          "total_break_evidence": 4.363640170074659,
+          "base_energy": 4.888761672496463,
+          "breaks": [
+            {
+              "broken_zone_id": 294,
+              "break_index": 2954,
+              "break_close": 3349.469,
+              "break_time_from_origin": 3,
+              "broken_zone_energy_at_break": 10.163115752796914,
+              "median_active_zone_energy_at_break": 2.420432718587373,
+              "barrier_ratio": 4.198883808977913,
+              "barrier_cost": 2.924806745043193,
+              "displacement": 0.5740000000000691,
+              "displacement_ratio": 0.10268336314848912,
+              "persistence": 1.5,
+              "break_evidence": 3.3536417504131646
+            },
+            {
+              "broken_zone_id": 310,
+              "break_index": 2955,
+              "break_close": 3354.905,
+              "break_time_from_origin": 4,
+              "broken_zone_energy_at_break": 1.822791851846069,
+              "median_active_zone_energy_at_break": 2.3855187045349036,
+              "barrier_ratio": 0.7641071304035122,
+              "barrier_cost": 0.45986472048838767,
+              "displacement": 3.9570000000003347,
+              "displacement_ratio": 0.8187461204221531,
+              "persistence": 2.0,
+              "break_evidence": 1.0099984196614948
+            }
+          ]
+        },
+        {
+          "interaction_id": 940,
+          "start_index": 3393,
+          "end_index": 3394,
+          "movement_energy": 5.658253751705158,
+          "total_break_evidence": 0.0,
+          "base_energy": 5.658253751705158,
+          "breaks": []
+        }
+      ]
+    },
+    {
+      "zone_id": 279,
+      "break_index": 3451,
+      "stored_energy": 16.25383584405461,
+      "stored_median": 2.1764892177380113,
+      "retained_movements_ending_by_break": [
+        {
+          "interaction_id": 629,
+          "start_index": 2261,
+          "end_index": 2263,
+          "movement_energy": 1.90799721835881,
+          "total_break_evidence": 0.0,
+          "base_energy": 1.90799721835881,
+          "breaks": []
+        },
+        {
+          "interaction_id": 631,
+          "start_index": 2266,
+          "end_index": 2267,
+          "movement_energy": 1.5470271602909382,
+          "total_break_evidence": 0.0,
+          "base_energy": 1.5470271602909382,
+          "breaks": []
+        },
+        {
+          "interaction_id": 791,
+          "start_index": 2817,
+          "end_index": 2829,
+          "movement_energy": 0.3162480099062557,
+          "total_break_evidence": 13.545432090290175,
+          "base_energy": 13.86168010019643,
+          "breaks": [
+            {
+              "broken_zone_id": 266,
+              "break_index": 2823,
+              "break_close": 3334.535,
+              "break_time_from_origin": 6,
+              "broken_zone_energy_at_break": 22.334106300991404,
+              "median_active_zone_energy_at_break": 2.6085088471211546,
+              "barrier_ratio": 8.5620205297138,
+              "barrier_cost": 4.308221249156753,
+              "displacement": 3.019999999999982,
+              "displacement_ratio": 0.2585616438356185,
+              "persistence": 6.0,
+              "break_evidence": 10.252778592035659
+            },
+            {
+              "broken_zone_id": 295,
+              "break_index": 2823,
+              "break_close": 3334.535,
+              "break_time_from_origin": 6,
+              "broken_zone_energy_at_break": 8.744579170856275,
+              "median_active_zone_energy_at_break": 2.6085088471211546,
+              "barrier_ratio": 3.352328737741147,
+              "barrier_cost": 2.504554687185218,
+              "displacement": 0.18699999999989814,
+              "displacement_ratio": 0.053843938957644825,
+              "persistence": 6.0,
+              "break_evidence": 3.292653498254517
+            }
+          ]
+        },
+        {
+          "interaction_id": 793,
+          "start_index": 2835,
+          "end_index": 2844,
+          "movement_energy": 0.750639674395787,
+          "total_break_evidence": 4.311640254764271,
+          "base_energy": 5.0622799291600575,
+          "breaks": [
+            {
+              "broken_zone_id": 269,
+              "break_index": 2844,
+              "break_close": 3338.805,
+              "break_time_from_origin": 9,
+              "broken_zone_energy_at_break": 18.287560857473437,
+              "median_active_zone_energy_at_break": 2.5382399263200988,
+              "barrier_ratio": 7.204819634204739,
+              "barrier_cost": 3.968581507517215,
+              "displacement": 0.6999999999998181,
+              "displacement_ratio": 0.05932203389828875,
+              "persistence": 1.5,
+              "break_evidence": 4.311640254764271
+            }
+          ]
+        },
+        {
+          "interaction_id": 949,
+          "start_index": 3428,
+          "end_index": 3432,
+          "movement_energy": 0.6169724770642178,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.6169724770642178,
+          "breaks": []
+        }
+      ]
+    },
+    {
+      "zone_id": 283,
+      "break_index": 3451,
+      "stored_energy": 21.4417984072431,
+      "stored_median": 2.1764892177380113,
+      "retained_movements_ending_by_break": [
+        {
+          "interaction_id": 662,
+          "start_index": 2383,
+          "end_index": 2384,
+          "movement_energy": 5.521560574948684,
+          "total_break_evidence": 4.940629803377169,
+          "base_energy": 10.462190378325854,
+          "breaks": [
+            {
+              "broken_zone_id": 251,
+              "break_index": 2384,
+              "break_close": 3286.715,
+              "break_time_from_origin": 1,
+              "broken_zone_energy_at_break": 38.72417463535799,
+              "median_active_zone_energy_at_break": 3.2946183054656397,
+              "barrier_ratio": 11.753766611178035,
+              "barrier_cost": 4.935559886795003,
+              "displacement": 0.01999999999998181,
+              "displacement_ratio": 0.003086419753083604,
+              "persistence": 0.3333333333333333,
+              "break_evidence": 4.940629803377169
+            }
+          ]
+        },
+        {
+          "interaction_id": 677,
+          "start_index": 2434,
+          "end_index": 2440,
+          "movement_energy": 1.257741646452086,
+          "total_break_evidence": 16.957800922477603,
+          "base_energy": 18.21554256892969,
+          "breaks": [
+            {
+              "broken_zone_id": 284,
+              "break_index": 2438,
+              "break_close": 3323.448,
+              "break_time_from_origin": 4,
+              "broken_zone_energy_at_break": 1.3411806549491334,
+              "median_active_zone_energy_at_break": 3.1187845107845265,
+              "barrier_ratio": 0.4300331267875128,
+              "barrier_cost": 0.16968242688827215,
+              "displacement": 7.0,
+              "displacement_ratio": 1.5755120414135457,
+              "persistence": 2.0,
+              "break_evidence": 0.49073799207161894
+            },
+            {
+              "broken_zone_id": 246,
+              "break_index": 2439,
+              "break_close": 3344.165,
+              "break_time_from_origin": 5,
+              "broken_zone_energy_at_break": 8.609909176954964,
+              "median_active_zone_energy_at_break": 3.1788159106770393,
+              "barrier_ratio": 2.7085271430899516,
+              "barrier_cost": 2.1205977945121584,
+              "displacement": 13.659999999999854,
+              "displacement_ratio": 1.3287937743190261,
+              "persistence": 2.5,
+              "break_evidence": 6.6022184916918105
+            },
+            {
+              "broken_zone_id": 269,
+              "break_index": 2439,
+              "break_close": 3344.165,
+              "break_time_from_origin": 5,
+              "broken_zone_energy_at_break": 4.436152499011921,
+              "median_active_zone_energy_at_break": 3.1788159106770393,
+              "barrier_ratio": 1.3955361441698235,
+              "barrier_cost": 1.0809645220837207,
+              "displacement": 6.059999999999945,
+              "displacement_ratio": 0.5135593220338858,
+              "persistence": 2.5,
+              "break_evidence": 2.2010168401291894
+            },
+            {
+              "broken_zone_id": 282,
+              "break_index": 2440,
+              "break_close": 3352.265,
+              "break_time_from_origin": 6,
+              "broken_zone_energy_at_break": 8.11555353880612,
+              "median_active_zone_energy_at_break": 3.054039689364405,
+              "barrier_ratio": 2.657317639671899,
+              "barrier_cost": 2.087079428382804,
+              "displacement": 3.75,
+              "displacement_ratio": 1.4367816091955825,
+              "persistence": 3.0,
+              "break_evidence": 7.663827598584982
+            }
+          ]
+        },
+        {
+          "interaction_id": 716,
+          "start_index": 2573,
+          "end_index": 2579,
+          "movement_energy": 1.2127111575512617,
+          "total_break_evidence": null,
+          "base_energy": 1.2127111575512617,
+          "breaks": [
+            {
+              "broken_zone_id": 293,
+              "break_index": 2576,
+              "break_close": 3317.298,
+              "break_time_from_origin": 3,
+              "broken_zone_energy_at_break": null,
+              "median_active_zone_energy_at_break": 2.6629610623172546,
+              "barrier_ratio": null,
+              "barrier_cost": null,
+              "displacement": 7.149999999999636,
+              "displacement_ratio": 1.4377639251959982,
+              "persistence": 0.375,
+              "break_evidence": null
+            }
+          ]
+        },
+        {
+          "interaction_id": 951,
+          "start_index": 3433,
+          "end_index": 3440,
+          "movement_energy": 0.2739726027397222,
+          "total_break_evidence": 0.7890472427288544,
+          "base_energy": 1.0630198454685766,
+          "breaks": [
+            {
+              "broken_zone_id": 325,
+              "break_index": 3435,
+              "break_close": 3290.745,
+              "break_time_from_origin": 2,
+              "broken_zone_energy_at_break": 0.8208298988893373,
+              "median_active_zone_energy_at_break": 2.026412681132042,
+              "barrier_ratio": 0.4050655162850571,
+              "barrier_cost": 0.1519294196401185,
+              "displacement": 2.8099999999999454,
+              "displacement_ratio": 0.384931506849298,
+              "persistence": 2.0,
+              "break_evidence": 0.2508812587579686
+            },
+            {
+              "broken_zone_id": 326,
+              "break_index": 3436,
+              "break_close": 3289.275,
+              "break_time_from_origin": 3,
+              "broken_zone_energy_at_break": 1.6249519491271978,
+              "median_active_zone_energy_at_break": 2.103544182388877,
+              "barrier_ratio": 0.7724829184627969,
+              "barrier_cost": 0.4679576998317402,
+              "displacement": 0.1999999999998181,
+              "displacement_ratio": 0.051282051282003444,
+              "persistence": 3.0,
+              "break_evidence": 0.5381659839708858
+            }
+          ]
+        },
+        {
+          "interaction_id": 953,
+          "start_index": 3442,
+          "end_index": 3443,
+          "movement_energy": 0.9119170984455879,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.9119170984455879,
+          "breaks": []
+        },
+        {
+          "interaction_id": 955,
+          "start_index": 3444,
+          "end_index": 3446,
+          "movement_energy": 0.7345098419470543,
+          "total_break_evidence": 1.016322286755167,
+          "base_energy": 1.7508321287022213,
+          "breaks": [
+            {
+              "broken_zone_id": 327,
+              "break_index": 3446,
+              "break_close": 3286.625,
+              "break_time_from_origin": 2,
+              "broken_zone_energy_at_break": 1.4626869211137281,
+              "median_active_zone_energy_at_break": 2.137458300743379,
+              "barrier_ratio": 0.6843113246256197,
+              "barrier_cost": 0.38409300235214544,
+              "displacement": 3.2100000000000364,
+              "displacement_ratio": 1.277357739753338,
+              "persistence": 2.0,
+              "break_evidence": 1.016322286755167
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "zone_id": 290,
+      "break_index": 3451,
+      "stored_energy": 31.172400050827914,
+      "stored_median": 2.1764892177380113,
+      "retained_movements_ending_by_break": [
+        {
+          "interaction_id": 711,
+          "start_index": 2546,
+          "end_index": 2550,
+          "movement_energy": 0.49372778962331093,
+          "total_break_evidence": 3.250815096256555,
+          "base_energy": 3.744542885879866,
+          "breaks": [
+            {
+              "broken_zone_id": 261,
+              "break_index": 2548,
+              "break_close": 3305.248,
+              "break_time_from_origin": 2,
+              "broken_zone_energy_at_break": 13.349274124147048,
+              "median_active_zone_energy_at_break": 2.7295529631038726,
+              "barrier_ratio": 4.890644843530389,
+              "barrier_cost": 3.2156067667375257,
+              "displacement": 0.03699999999980719,
+              "displacement_ratio": 0.0054896142432946425,
+              "persistence": 2.0,
+              "break_evidence": 3.250815096256555
+            }
+          ]
+        },
+        {
+          "interaction_id": 720,
+          "start_index": 2587,
+          "end_index": 2590,
+          "movement_energy": 0.5007892930679447,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.5007892930679447,
+          "breaks": []
+        },
+        {
+          "interaction_id": 722,
+          "start_index": 2593,
+          "end_index": 2599,
+          "movement_energy": 0.7237083180652253,
+          "total_break_evidence": 0.3721363172450807,
+          "base_energy": 1.095844635310306,
+          "breaks": [
+            {
+              "broken_zone_id": 295,
+              "break_index": 2596,
+              "break_close": 3337.965,
+              "break_time_from_origin": 3,
+              "broken_zone_energy_at_break": 1.3050736830642276,
+              "median_active_zone_energy_at_break": 2.6499826881137096,
+              "barrier_ratio": 0.49248385241082276,
+              "barrier_cost": 0.21715794919420428,
+              "displacement": 3.617000000000189,
+              "displacement_ratio": 1.0414627123525007,
+              "persistence": 1.0,
+              "break_evidence": 0.3721363172450807
+            }
+          ]
+        },
+        {
+          "interaction_id": 728,
+          "start_index": 2611,
+          "end_index": 2619,
+          "movement_energy": 0.8863262195121886,
+          "total_break_evidence": 13.719314783389889,
+          "base_energy": 14.605641002902077,
+          "breaks": [
+            {
+              "broken_zone_id": 270,
+              "break_index": 2614,
+              "break_close": 3355.005,
+              "break_time_from_origin": 3,
+              "broken_zone_energy_at_break": 31.35286741475359,
+              "median_active_zone_energy_at_break": 2.717838022647527,
+              "barrier_ratio": 11.53595878543631,
+              "barrier_cost": 4.898424294021006,
+              "displacement": 7.640000000000327,
+              "displacement_ratio": 0.8565022421525398,
+              "persistence": 0.6,
+              "break_evidence": 6.716800320882497
+            },
+            {
+              "broken_zone_id": 294,
+              "break_index": 2614,
+              "break_close": 3355.005,
+              "break_time_from_origin": 3,
+              "broken_zone_energy_at_break": 2.105015029871682,
+              "median_active_zone_energy_at_break": 2.717838022647527,
+              "barrier_ratio": 0.774518206136922,
+              "barrier_cost": 0.46992765863351393,
+              "displacement": 6.110000000000127,
+              "displacement_ratio": 1.0930232558139479,
+              "persistence": 0.6,
+              "break_evidence": 0.6781834938263741
+            },
+            {
+              "broken_zone_id": 264,
+              "break_index": 2619,
+              "break_close": 3374.505,
+              "break_time_from_origin": 8,
+              "broken_zone_energy_at_break": 52.03648161936481,
+              "median_active_zone_energy_at_break": 2.7109526734627596,
+              "barrier_ratio": 19.194905956398518,
+              "barrier_cost": 5.912000295174739,
+              "displacement": 0.6300000000001091,
+              "displacement_ratio": 0.04455445544555267,
+              "persistence": 1.6,
+              "break_evidence": 6.324330968681018
+            }
+          ]
+        },
+        {
+          "interaction_id": 785,
+          "start_index": 2805,
+          "end_index": 2807,
+          "movement_energy": 0.5883620689655245,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.5883620689655245,
+          "breaks": []
+        },
+        {
+          "interaction_id": 787,
+          "start_index": 2808,
+          "end_index": 2810,
+          "movement_energy": 0.38111647139902755,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.38111647139902755,
+          "breaks": []
+        },
+        {
+          "interaction_id": 833,
+          "start_index": 3008,
+          "end_index": 3009,
+          "movement_energy": 6.290010741138543,
+          "total_break_evidence": 0.18737110565612508,
+          "base_energy": 6.477381846794668,
+          "breaks": [
+            {
+              "broken_zone_id": 293,
+              "break_index": 3009,
+              "break_close": 3302.035,
+              "break_time_from_origin": 1,
+              "broken_zone_energy_at_break": 1.0147098361386702,
+              "median_active_zone_energy_at_break": 2.3805597083298915,
+              "barrier_ratio": 0.4262484291354117,
+              "barrier_cost": 0.16694369062723552,
+              "displacement": 3.1400000000003274,
+              "displacement_ratio": 0.6314096119043545,
+              "persistence": 0.25,
+              "break_evidence": 0.18737110565612508
+            }
+          ]
+        },
+        {
+          "interaction_id": 836,
+          "start_index": 3036,
+          "end_index": 3037,
+          "movement_energy": 4.99860643363147,
+          "total_break_evidence": 0.0,
+          "base_energy": 4.99860643363147,
+          "breaks": []
+        },
+        {
+          "interaction_id": 930,
+          "start_index": 3362,
+          "end_index": 3364,
+          "movement_energy": 0.2701667417755772,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.2701667417755772,
+          "breaks": []
+        },
+        {
+          "interaction_id": 935,
+          "start_index": 3381,
+          "end_index": 3382,
+          "movement_energy": 1.9435215946843618,
+          "total_break_evidence": 0.0,
+          "base_energy": 1.9435215946843618,
+          "breaks": []
+        },
+        {
+          "interaction_id": 937,
+          "start_index": 3384,
+          "end_index": 3385,
+          "movement_energy": 3.484796238244535,
+          "total_break_evidence": 0.0,
+          "base_energy": 3.484796238244535,
+          "breaks": []
+        },
+        {
+          "interaction_id": 939,
+          "start_index": 3386,
+          "end_index": 3393,
+          "movement_energy": 0.1390351001982171,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.1390351001982171,
+          "breaks": []
+        },
+        {
+          "interaction_id": 947,
+          "start_index": 3424,
+          "end_index": 3426,
+          "movement_energy": 2.7144385026738083,
+          "total_break_evidence": 0.0,
+          "base_energy": 2.7144385026738083,
+          "breaks": []
+        }
+      ]
+    },
+    {
+      "zone_id": 292,
+      "break_index": 3451,
+      "stored_energy": 32.46451180231315,
+      "stored_median": 2.1764892177380113,
+      "retained_movements_ending_by_break": [
+        {
+          "interaction_id": 715,
+          "start_index": 2565,
+          "end_index": 2573,
+          "movement_energy": 0.6602578068264385,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.6602578068264385,
+          "breaks": []
+        },
+        {
+          "interaction_id": 717,
+          "start_index": 2579,
+          "end_index": 2583,
+          "movement_energy": 0.30655742661064356,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.30655742661064356,
+          "breaks": []
+        },
+        {
+          "interaction_id": 810,
+          "start_index": 2929,
+          "end_index": 2935,
+          "movement_energy": 0.16020316134238377,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.16020316134238377,
+          "breaks": []
+        },
+        {
+          "interaction_id": 822,
+          "start_index": 2977,
+          "end_index": 2983,
+          "movement_energy": 0.3223253701259135,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.3223253701259135,
+          "breaks": []
+        },
+        {
+          "interaction_id": 826,
+          "start_index": 2990,
+          "end_index": 2991,
+          "movement_energy": 0.8983833718244714,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.8983833718244714,
+          "breaks": []
+        },
+        {
+          "interaction_id": 938,
+          "start_index": 3385,
+          "end_index": 3386,
+          "movement_energy": 0.6775064093914582,
+          "total_break_evidence": 0.0,
+          "base_energy": 0.6775064093914582,
+          "breaks": []
+        },
+        {
+          "interaction_id": 942,
+          "start_index": 3402,
+          "end_index": 3408,
+          "movement_energy": 4.978070175438666,
+          "total_break_evidence": 25.883388978928146,
+          "base_energy": 30.861459154366813,
+          "breaks": [
+            {
+              "broken_zone_id": 324,
+              "break_index": 3405,
+              "break_close": 3313.125,
+              "break_time_from_origin": 3,
+              "broken_zone_energy_at_break": 8.71418012266218,
+              "median_active_zone_energy_at_break": 2.2677943067072714,
+              "barrier_ratio": 3.8425795923770316,
+              "barrier_cost": 2.7578188022398433,
+              "displacement": 8.5300000000002,
+              "displacement_ratio": 4.39011837364965,
+              "persistence": 0.375,
+              "break_evidence": 4.499968115313478
+            },
+            {
+              "broken_zone_id": 261,
+              "break_index": 3406,
+              "break_close": 3302.775,
+              "break_time_from_origin": 4,
+              "broken_zone_energy_at_break": 21.825413220239092,
+              "median_active_zone_energy_at_break": 2.246696451410787,
+              "barrier_ratio": 9.714446829937385,
+              "barrier_cost": 4.557769067370695,
+              "displacement": 2.5099999999997635,
+              "displacement_ratio": 0.3724035608308124,
+              "persistence": 0.5,
+              "break_evidence": 5.279181019956967
+            },
+            {
+              "broken_zone_id": 290,
+              "break_index": 3406,
+              "break_close": 3302.775,
+              "break_time_from_origin": 4,
+              "broken_zone_energy_at_break": 29.15289482516118,
+              "median_active_zone_energy_at_break": 2.246696451410787,
+              "barrier_ratio": 12.975893920540516,
+              "barrier_cost": 5.1321082427514915,
+              "displacement": 8.61999999999989,
+              "displacement_ratio": 0.8988529718456476,
+              "persistence": 0.5,
+              "break_evidence": 6.777590460514056
+            },
+            {
+              "broken_zone_id": 250,
+              "break_index": 3408,
+              "break_close": 3290.235,
+              "break_time_from_origin": 6,
+              "broken_zone_energy_at_break": 15.094755131006403,
+              "median_active_zone_energy_at_break": 2.2244905963180903,
+              "barrier_ratio": 6.785713167765594,
+              "barrier_cost": 3.8511237888117416,
+              "displacement": 8.039999999999964,
+              "displacement_ratio": 1.0100502512562721,
+              "persistence": 0.75,
+              "break_evidence": 5.867648425257672
+            },
+            {
+              "broken_zone_id": 291,
+              "break_index": 3408,
+              "break_close": 3290.235,
+              "break_time_from_origin": 6,
+              "broken_zone_energy_at_break": 8.018216791381974,
+              "median_active_zone_energy_at_break": 2.2244905963180903,
+              "barrier_ratio": 3.604518178073436,
+              "barrier_cost": 2.6385251377449865,
+              "displacement": 2.962999999999738,
+              "displacement_ratio": 0.5137853303276564,
+              "persistence": 0.75,
+              "break_evidence": 3.4590009578859737
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "zone_id": 247,
+      "break_index": 3453,
+      "stored_energy": 29.279133298139723,
+      "stored_median": 1.9154715864362155,
+      "retained_movements_ending_by_break": [
+        {
+          "interaction_id": 513,
+          "start_index": 1823,
+          "end_index": 1828,
+          "movement_energy": 1.9516129032258016,
+          "total_break_evidence": 0.0033748863218152976,
+          "base_energy": 1.9549877895476169,
+          "breaks": [
+            {
+              "broken_zone_id": 246,
+              "break_index": 1827,
+              "break_close": 3314.995,
+              "break_time_from_origin": 4,
+              "broken_zone_energy_at_break": 0.15820369474410068,
+              "median_active_zone_energy_at_break": 3.071966492305817,
+              "barrier_ratio": 0.05149916027415814,
+              "barrier_cost": 0.0026486527293753236,
+              "displacement": 5.230000000000018,
+              "displacement_ratio": 0.5087548638132214,
+              "persistence": 0.6666666666666666,
+              "break_evidence": 0.0033748863218152976
+            }
+          ]
+        },
+        {
+          "interaction_id": 919,
+          "start_index": 3336,
+          "end_index": 3337,
+          "movement_energy": 3.630379746835489,
+          "total_break_evidence": 0.0,
+          "base_energy": 3.630379746835489,
+          "breaks": []
+        },
+        {
+          "interaction_id": 928,
+          "start_index": 3356,
+          "end_index": 3361,
+          "movement_energy": 0.9191539365452588,
+          "total_break_evidence": 25.34489970192295,
+          "base_energy": 26.264053638468212,
+          "breaks": [
+            {
+              "broken_zone_id": 249,
+              "break_index": 3360,
+              "break_close": 3302.085,
+              "break_time_from_origin": 4,
+              "broken_zone_energy_at_break": 20.805264133369057,
+              "median_active_zone_energy_at_break": 2.1862331647702145,
+              "barrier_ratio": 9.51648912322479,
+              "barrier_cost": 4.517033433081796,
+              "displacement": 18.539999999999964,
+              "displacement_ratio": 1.2062459336369613,
+              "persistence": 4.0,
+              "break_evidence": 18.81421031212648
+            },
+            {
+              "broken_zone_id": 255,
+              "break_index": 3360,
+              "break_close": 3302.085,
+              "break_time_from_origin": 4,
+              "broken_zone_energy_at_break": 21.87979512202402,
+              "median_active_zone_energy_at_break": 2.1862331647702145,
+              "barrier_ratio": 10.007987928553682,
+              "barrier_cost": 4.616701665948861,
+              "displacement": 1.7199999999998,
+              "displacement_ratio": 0.1092063492063365,
+              "persistence": 4.0,
+              "break_evidence": 6.530689389796472
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "reference_resolution_history": [
+    {
+      "origin_zone_id": 328,
+      "origin_type": "support",
+      "reaction_price": 3284.998,
+      "reaction_index": 3446,
+      "previous_distance": 15.150000000000091,
+      "previous_movement_time": 2,
+      "source": {
+        "kind": "closed_interaction",
+        "zone_id": 283,
+        "interaction_id": 955,
+        "start_price": 3300.148,
+        "start_index": 3444,
+        "end_price": 3284.998,
+        "end_index": 3446
+      }
+    }
+  ]
+}
