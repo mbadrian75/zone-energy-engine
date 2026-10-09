@@ -57,7 +57,7 @@ TEMPLATE = '''<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8">
 input,select,button{font:inherit;padding:8px;margin:4px;border:1px solid #94a3b8;border-radius:6px}
 table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:9px;border-bottom:1px solid #e2e8f0;text-align:right}
 tbody tr{cursor:pointer}tbody tr:hover{background:#eff6ff}.scroll{overflow:auto;max-height:440px}
-svg{width:100%;min-width:900px}#chart{overflow:auto} .muted{color:#475569}#detail{scroll-margin-top:20px}</style>
+svg{width:100%;min-width:900px;direction:ltr}#chart{overflow:auto} .muted{color:#475569}#detail{scroll-margin-top:20px}</style>
 <h1>گزارش زون‌ها و انرژی واکنش‌ها</h1><div class="box" id="summary"></div>
 <p class="muted">وضعیت، نقش و انرژی زون‌ها مربوط به آخرین کندل checkpoint است؛ رنگ زون وضعیت تاریخی آن در همهٔ کندل‌ها را نشان نمی‌دهد.
 زون‌های هم‌پوشان با محدودهٔ قیمت چارت نمایش داده می‌شوند. با انتخاب هر زون، مرزهای آن و سهم واکنش‌هایش را ببینید.</p>
