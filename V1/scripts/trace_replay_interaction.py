@@ -1,5 +1,6 @@
 """Read-only energy trace, reconstructing past a saved checkpoint without writes."""
 import argparse
+from contextlib import contextmanager
 from dataclasses import asdict, fields
 import json
 import os
@@ -10,6 +11,42 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"src"))
 from zone_energy.config import EngineConfig,EngineTimeframe
 from zone_energy.engine.zone_boundary_service import ZoneBoundaryService
 from zone_energy.replay.replay_engine import ReplayEngine,ReplayState
+from zone_energy.engine.previous_move_resolver import PreviousMoveResolver
+from zone_energy.models import Zone
+
+
+@contextmanager
+def capture_references(identifier):
+    """Capture the resolver's actual historical inputs, including replay rebuilds."""
+    original = PreviousMoveResolver.resolve
+    captured = []
+
+    def resolve(move, origin, zones):
+        source = original(move, origin, zones)
+        if move.id == identifier:
+            entry = {"origin_zone_id":origin.id,"origin_type":origin.type.value,
+                     "reaction_price":move.start_price,"reaction_index":move.start_index,
+                     "previous_distance":move.previous_distance,
+                     "previous_movement_time":move.previous_movement_time,
+                     "source":None}
+            if source is not None:
+                entry["source"] = ({"kind":"zone_creation","zone_id":source.id,
+                    "zone_type":source.type.value,"start_price":source.creation_extreme,
+                    "start_index":source.creation_index,"confirmed_at_index":source.created_at_index}
+                    if isinstance(source, Zone) else
+                    {"kind":"closed_interaction","zone_id":source.zone_id,
+                     "interaction_id":source.id,"start_price":source.start_price,
+                     "start_index":source.start_index,"end_price":source.end_price,
+                     "end_index":source.end_index})
+            if not captured or captured[-1] != entry:
+                captured.append(entry)
+        return source
+
+    PreviousMoveResolver.resolve = staticmethod(resolve)
+    try:
+        yield captured
+    finally:
+        PreviousMoveResolver.resolve = staticmethod(original)
 
 
 def interaction_report(state, identifier):
@@ -60,25 +97,32 @@ def main():
         config_values["timeframe"] = EngineTimeframe(config_values["timeframe"])
         config = EngineConfig(**config_values)
         engine = ReplayEngine(config,document["year_candles"],ZoneBoundaryService(market,config))
-        for candle in market.stream_candles(args.timeframe,context["start"],context["end"]):
-            engine.process(candle)
-            if engine.current_index==args.checkpoint_index:
-                if (engine.state.zones != results.load_zones(identifier)
-                        or candle.datetime != context["candle_datetime"]
-                        or any(getattr(engine.state,item.name) != context.get(item.name,item.default_factory()
-                            if callable(item.default_factory) else item.default)
-                            for item in fields(ReplayState) if item.name != "zones")):
-                    raise ValueError("Checkpoint reconstruction differs; trace withheld")
-                print("Checkpoint reconstruction: MATCH")
-            if engine.current_index==args.through_index:
-                break
-        if engine.current_index!=args.through_index:
-            raise ValueError("Requested candle index unavailable")
-        print(f"Read-only reconstruction through index: {engine.current_index}")
-        print(json.dumps(interaction_report(engine.state,args.interaction_id),ensure_ascii=False,indent=2,default=str))
+        with capture_references(args.interaction_id) as reference_history:
+            reconstruct(engine, market, results, identifier, context, args)
+        report = interaction_report(engine.state,args.interaction_id)
+        report["reference_resolution_history"] = reference_history
+        print(json.dumps(report,ensure_ascii=False,indent=2,default=str))
     finally:
         results.close()
         market.close()
+
+
+def reconstruct(engine, market, results, identifier, context, args):
+    for candle in market.stream_candles(args.timeframe,context["start"],context["end"]):
+        engine.process(candle)
+        if engine.current_index==args.checkpoint_index:
+            if (engine.state.zones != results.load_zones(identifier)
+                    or candle.datetime != context["candle_datetime"]
+                    or any(getattr(engine.state,item.name) != context.get(item.name,item.default_factory()
+                        if callable(item.default_factory) else item.default)
+                        for item in fields(ReplayState) if item.name != "zones")):
+                raise ValueError("Checkpoint reconstruction differs; trace withheld")
+            print("Checkpoint reconstruction: MATCH")
+        if engine.current_index==args.through_index:
+            break
+    if engine.current_index!=args.through_index:
+        raise ValueError("Requested candle index unavailable")
+    print(f"Read-only reconstruction through index: {engine.current_index}")
 
 
 if __name__ == "__main__":
