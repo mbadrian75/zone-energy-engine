@@ -1,0 +1,371 @@
+{
+  "scope": "Final retained checkpoint history; final zone energies are not intrayear maxima",
+  "calibration": "log1p",
+  "final_zone_energy": {
+    "total": 563,
+    "defined": 512,
+    "undefined": 51,
+    "zero": 0,
+    "min": 0.01130135557435273,
+    "median": 0.8534475205383764,
+    "p95": 16.68346425341881,
+    "p99": 42.378150398609705,
+    "max": 75.64385820194789
+  },
+  "final_active_zone_energy": {
+    "total": 115,
+    "defined": 115,
+    "undefined": 0,
+    "zero": 0,
+    "min": 0.012859945794668428,
+    "median": 1.814556953866052,
+    "p95": 25.903309871516562,
+    "p99": 54.3493056364485,
+    "max": 75.64385820194789
+  },
+  "final_broken_zone_energy": {
+    "total": 448,
+    "defined": 397,
+    "undefined": 51,
+    "zero": 0,
+    "min": 0.01130135557435273,
+    "median": 0.6792779353357187,
+    "p95": 13.349065423071865,
+    "p99": 31.08233670071339,
+    "max": 66.51544402891629
+  },
+  "interaction_base_energy": {
+    "total": 1552,
+    "defined": 1550,
+    "undefined": 2,
+    "zero": 0,
+    "min": 0.010780590717298763,
+    "median": 1.510476909738955,
+    "p95": 13.335550386502895,
+    "p99": 37.5963824884116,
+    "max": 107.08170081710568
+  },
+  "movement_energy": {
+    "total": 1552,
+    "defined": 1550,
+    "undefined": 2,
+    "zero": 0,
+    "min": 0.004882399887331126,
+    "median": 1.0384691414152973,
+    "p95": 4.3811161342203455,
+    "p99": 9.83783594852786,
+    "max": 100.99519230764835
+  },
+  "barrier_ratio": {
+    "total": 936,
+    "defined": 826,
+    "undefined": 110,
+    "zero": 0,
+    "min": 0.0034706023737231346,
+    "median": 1.390100439956698,
+    "p95": 16.77731725964656,
+    "p99": 27.252037740083495,
+    "max": 90.45573785688948
+  },
+  "barrier_cost": {
+    "total": 936,
+    "defined": 826,
+    "undefined": 110,
+    "zero": 0,
+    "min": 1.2045008295088995e-05,
+    "median": 1.0758109147381598,
+    "p95": 5.643578562725835,
+    "p99": 6.611579496487013,
+    "max": 9.009843501667534
+  },
+  "break_evidence": {
+    "total": 936,
+    "defined": 826,
+    "undefined": 110,
+    "zero": 0,
+    "min": 1.5420165663479863e-05,
+    "median": 1.824653772605704,
+    "p95": 13.847638886818173,
+    "p99": 24.53388245196698,
+    "max": 46.75507019661274
+  },
+  "top_final_zones": [
+    {
+      "zone_id": 460,
+      "type": "support",
+      "state": "active",
+      "creation_index": 4665,
+      "energy": 75.64385820194789
+    },
+    {
+      "zone_id": 457,
+      "type": "resistance",
+      "state": "broken",
+      "creation_index": 4659,
+      "energy": 66.51544402891629
+    },
+    {
+      "zone_id": 455,
+      "type": "support",
+      "state": "active",
+      "creation_index": 4649,
+      "energy": 54.55440374528146
+    },
+    {
+      "zone_id": 434,
+      "type": "support",
+      "state": "active",
+      "creation_index": 4554,
+      "energy": 53.089417253617455
+    },
+    {
+      "zone_id": 294,
+      "type": "resistance",
+      "state": "broken",
+      "creation_index": 2584,
+      "energy": 52.38139315418128
+    },
+    {
+      "zone_id": 315,
+      "type": "resistance",
+      "state": "broken",
+      "creation_index": 3172,
+      "energy": 42.629582548866644
+    },
+    {
+      "zone_id": 554,
+      "type": "resistance",
+      "state": "active",
+      "creation_index": 5837,
+      "energy": 40.343835728349305
+    },
+    {
+      "zone_id": 506,
+      "type": "resistance",
+      "state": "broken",
+      "creation_index": 5186,
+      "energy": 39.22730214674655
+    },
+    {
+      "zone_id": 244,
+      "type": "support",
+      "state": "active",
+      "creation_index": 1805,
+      "energy": 31.99076002772343
+    },
+    {
+      "zone_id": 544,
+      "type": "support",
+      "state": "broken",
+      "creation_index": 5773,
+      "energy": 30.74296314046183
+    }
+  ],
+  "top_interactions": [
+    {
+      "zone_id": 315,
+      "interaction_id": 1022,
+      "start_index": 3665,
+      "end_index": 3668,
+      "base_energy": 107.08170081710568,
+      "movement_energy": 100.99519230764835,
+      "total_break_evidence": 6.086508509457325
+    },
+    {
+      "zone_id": 328,
+      "interaction_id": 956,
+      "start_index": 3446,
+      "end_index": 3453,
+      "base_energy": 98.92684946451519,
+      "movement_energy": 1.3193210749646291,
+      "total_break_evidence": 97.60752838955055
+    },
+    {
+      "zone_id": 457,
+      "interaction_id": 1412,
+      "start_index": 5168,
+      "end_index": 5174,
+      "base_energy": 93.84895787609935,
+      "movement_energy": 0.9169923031379639,
+      "total_break_evidence": 92.93196557296139
+    },
+    {
+      "zone_id": 294,
+      "interaction_id": 960,
+      "start_index": 3463,
+      "end_index": 3475,
+      "base_energy": 79.39961384589003,
+      "movement_energy": 0.415591486214405,
+      "total_break_evidence": 78.98402235967562
+    },
+    {
+      "zone_id": 434,
+      "interaction_id": 1463,
+      "start_index": 5303,
+      "end_index": 5321,
+      "base_energy": 71.17446859868548,
+      "movement_energy": 0.27384554767534,
+      "total_break_evidence": 70.90062305101014
+    },
+    {
+      "zone_id": 455,
+      "interaction_id": 1487,
+      "start_index": 5383,
+      "end_index": 5406,
+      "base_energy": 71.05916462857209,
+      "movement_energy": 0.31746699184256555,
+      "total_break_evidence": 70.74169763672953
+    },
+    {
+      "zone_id": 246,
+      "interaction_id": 1049,
+      "start_index": 3796,
+      "end_index": 3799,
+      "base_energy": 62.24930868650481,
+      "movement_energy": 3.636018957346063,
+      "total_break_evidence": 58.61328972915875
+    },
+    {
+      "zone_id": 169,
+      "interaction_id": 359,
+      "start_index": 1272,
+      "end_index": 1273,
+      "base_energy": 60.02639130674256,
+      "movement_energy": 59.08947745168543,
+      "total_break_evidence": 0.9369138550571284
+    },
+    {
+      "zone_id": 323,
+      "interaction_id": 918,
+      "start_index": 3324,
+      "end_index": 3336,
+      "base_energy": 52.35317178347522,
+      "movement_energy": 0.7413841300267399,
+      "total_break_evidence": 51.61178765344848
+    },
+    {
+      "zone_id": 320,
+      "interaction_id": 911,
+      "start_index": 3299,
+      "end_index": 3310,
+      "base_energy": 46.894131109213895,
+      "movement_energy": 0.42742728677812103,
+      "total_break_evidence": 46.466703822435775
+    }
+  ],
+  "top_breaks": [
+    {
+      "origin_zone_id": 455,
+      "interaction_id": 1487,
+      "broken_zone_id": 502,
+      "break_index": 5405,
+      "zone_energy_at_break": 13.11451195048825,
+      "median_at_break": 1.869521245392071,
+      "barrier_ratio": 7.014903940146403,
+      "barrier_cost": 3.9161918494994974,
+      "break_evidence": 46.75507019661274
+    },
+    {
+      "origin_zone_id": 294,
+      "interaction_id": 960,
+      "broken_zone_id": 323,
+      "break_index": 3475,
+      "zone_energy_at_break": 48.49239624934961,
+      "median_at_break": 1.8942117386826656,
+      "barrier_ratio": 25.60030394652383,
+      "barrier_cost": 6.486733128410757,
+      "break_evidence": 46.47030835131026
+    },
+    {
+      "origin_zone_id": 434,
+      "interaction_id": 1463,
+      "broken_zone_id": 506,
+      "break_index": 5313,
+      "zone_energy_at_break": 52.94215358508738,
+      "median_at_break": 1.9588468125284964,
+      "barrier_ratio": 27.027204601440577,
+      "barrier_cost": 6.595055918948542,
+      "break_evidence": 41.38341718520496
+    },
+    {
+      "origin_zone_id": 320,
+      "interaction_id": 911,
+      "broken_zone_id": 296,
+      "break_index": 3308,
+      "zone_energy_at_break": 17.697749001474783,
+      "median_at_break": 2.077868742051261,
+      "barrier_ratio": 8.517260327042438,
+      "barrier_cost": 4.297880106609468,
+      "break_evidence": 38.04693189251331
+    },
+    {
+      "origin_zone_id": 244,
+      "interaction_id": 946,
+      "broken_zone_id": 268,
+      "break_index": 3424,
+      "zone_energy_at_break": 44.59188340716083,
+      "median_at_break": 2.0377527590109663,
+      "barrier_ratio": 21.882872301350105,
+      "barrier_cost": 6.173494603413955,
+      "break_evidence": 35.01430820841796
+    },
+    {
+      "origin_zone_id": 294,
+      "interaction_id": 883,
+      "broken_zone_id": 266,
+      "break_index": 3198,
+      "zone_energy_at_break": 57.10210926421785,
+      "median_at_break": 2.3735010403661216,
+      "barrier_ratio": 24.058177474154228,
+      "barrier_cost": 6.362676150884639,
+      "break_evidence": 29.964101913476355
+    },
+    {
+      "origin_zone_id": 268,
+      "interaction_id": 834,
+      "broken_zone_id": 290,
+      "break_index": 3018,
+      "zone_energy_at_break": 23.42905914228493,
+      "median_at_break": 2.407203985567045,
+      "barrier_ratio": 9.732893133593722,
+      "barrier_cost": 4.561523463489609,
+      "break_evidence": 25.240673769966737
+    },
+    {
+      "origin_zone_id": 328,
+      "interaction_id": 956,
+      "broken_zone_id": 283,
+      "break_index": 3451,
+      "zone_energy_at_break": 21.4417984072431,
+      "median_at_break": 2.1764892177380113,
+      "barrier_ratio": 9.851552781652279,
+      "barrier_cost": 4.585509089214739,
+      "break_evidence": 24.951947375213102
+    },
+    {
+      "origin_zone_id": 323,
+      "interaction_id": 918,
+      "broken_zone_id": 252,
+      "break_index": 3332,
+      "zone_energy_at_break": 50.12056564238734,
+      "median_at_break": 2.1351164136530922,
+      "barrier_ratio": 23.47439480203012,
+      "barrier_cost": 6.313633570376289,
+      "break_evidence": 24.660077578717893
+    },
+    {
+      "origin_zone_id": 294,
+      "interaction_id": 1029,
+      "broken_zone_id": 292,
+      "break_index": 3691,
+      "zone_energy_at_break": 31.917705095055556,
+      "median_at_break": 1.848282254509443,
+      "barrier_ratio": 17.268847881422154,
+      "barrier_cost": 5.701156052466005,
+      "break_evidence": 24.15529707171425
+    }
+  ],
+  "run_id": "replay-018aec4eb4aa4b66ab892b9ab32bef62",
+  "checkpoint_index": 5904,
+  "checkpoint_energy_match": true
+}
