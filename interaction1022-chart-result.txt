@@ -1,0 +1,4 @@
+Origin zone: 315; displayed zone: 312; interaction: 1022; start: 3665; break: None
+Displayed zone history: [{"id": 315, "creation_index": 3172, "creation_extreme": 3342.775, "interactions": [{"id": 1022, "start_index": 3665, "start_price": 3340.948, "end_index": 3668}]}, {"id": 312, "creation_index": 3000, "creation_extreme": 3342.348, "interactions": [{"id": 1019, "start_index": 3654, "start_price": 3341.278, "end_index": 3655}, {"id": 1021, "start_index": 3658, "start_price": 3340.74, "end_index": 3665}]}]
+Chart candles: 3653–3673
+Chart: C:\Project\zone-energy-engine\zone-energy-engine\replay-interaction1022-chart.html
