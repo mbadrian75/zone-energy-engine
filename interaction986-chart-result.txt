@@ -1,0 +1,4 @@
+Origin zone: 304; displayed zone: 333; interaction: 986; start: 3565; break: None
+Displayed zone history: [{"id": 304, "creation_index": 2733, "creation_extreme": 3387.798, "interactions": [{"id": 986, "start_index": 3565, "start_price": 3380.035, "end_index": 3566}]}, {"id": 333, "creation_index": 3523, "creation_extreme": 3379.798, "interactions": [{"id": 973, "start_index": 3523, "start_price": 3379.798, "end_index": 3526}]}]
+Chart candles: 3518–3570
+Chart: C:\Project\zone-energy-engine\zone-energy-engine\replay-interaction986-chart.html
