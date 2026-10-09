@@ -1,0 +1,269 @@
+Checkpoint reconstruction: MATCH
+Zone energy at original break: MATCH
+{"zone_id": 312, "candle_index": 3667, "state": "active", "zone_type": "support", "creation_index": 3000, "effective_zone_energy": 35.000604677817456, "median_active_energy": 1.8014079186023797, "interactions": [{"interaction_id": 831, "state": "closed", "start_index": 3000, "end_index": 3004, "previous_distance": 11.81899999999996, "previous_time": 2, "distance": 36.583000000000084, "movement_time": 4, "movement_energy": 1.5476351637194437, "total_break_evidence": 11.79324711955798, "base_energy": 13.340882283277423, "age": 667, "time_weight": 0.7129219677041585, "effective_contribution": 9.511008048303687, "included_in_sum": true, "exclusion_reason": null}, {"interaction_id": 855, "state": "closed", "start_index": 3094, "end_index": 3098, "previous_distance": 24.0, "previous_time": 7, "distance": 6.650000000000091, "movement_time": 4, "movement_energy": 0.48489583333333997, "total_break_evidence": 4.773526314076572, "base_energy": 5.258422147409912, "age": 573, "time_weight": 0.7477436268476917, "effective_contribution": 3.931951648000515, "included_in_sum": true, "exclusion_reason": null}, {"interaction_id": 867, "state": "closed", "start_index": 3131, "end_index": 3134, "previous_distance": 33.690000000000055, "previous_time": 4, "distance": 10.759999999999764, "movement_time": 3, "movement_energy": 0.42584347481942203, "total_break_evidence": 0.0, "base_energy": 0.42584347481942203, "age": 536, "time_weight": 0.7619119992351754, "effective_contribution": 0.3244552532609199, "included_in_sum": true, "exclusion_reason": null}, {"interaction_id": 869, "state": "closed", "start_index": 3137, "end_index": 3145, "previous_distance": 10.409999999999854, "previous_time": 3, "distance": 23.84999999999991, "movement_time": 8, "movement_energy": 0.8591498559077897, "total_break_evidence": 0.655347554723673, "base_energy": 1.5144974106314626, "age": 530, "time_weight": 0.7642347376791342, "effective_contribution": 1.1574315313296637, "included_in_sum": true, "exclusion_reason": null}, {"interaction_id": 922, "state": "closed", "start_index": 3343, "end_index": 3345, "previous_distance": 15.2800000000002, "previous_time": 4, "distance": 23.146999999999935, "movement_time": 2, "movement_energy": 3.0297120418847685, "total_break_evidence": 0.0, "base_energy": 3.0297120418847685, "age": 324, "time_weight": 0.8484262628433447, "effective_contribution": 2.570487265187773, "included_in_sum": true, "exclusion_reason": null}, {"interaction_id": 924, "state": "closed", "start_index": 3346, "end_index": 3347, "previous_distance": 20.210000000000036, "previous_time": 1, "distance": 9.682999999999993, "movement_time": 1, "movement_energy": 0.47911924789707944, "total_break_evidence": 0.0, "base_energy": 0.47911924789707944, "age": 321, "time_weight": 0.8497185201209504, "effective_contribution": 0.40711649828456914, "included_in_sum": true, "exclusion_reason": null}, {"interaction_id": 1006, "state": "closed", "start_index": 3611, "end_index": 3612, "previous_distance": 22.0300000000002, "previous_time": 4, "distance": 21.970000000000255, "movement_time": 1, "movement_energy": 3.989105764866102, "total_break_evidence": 0.0, "base_energy": 3.989105764866102, "age": 56, "time_weight": 0.9719897763144143, "effective_contribution": 3.877370020086743, "included_in_sum": true, "exclusion_reason": null}, {"interaction_id": 1019, "state": "closed", "start_index": 3654, "end_index": 3655, "previous_distance": 33.277000000000044, "previous_time": 8, "distance": 17.720000000000255, "movement_time": 1, "movement_energy": 4.259999398984339, "total_break_evidence": 0.0, "base_energy": 4.259999398984339, "age": 13, "time_weight": 0.9934265235533113, "effective_contribution": 4.231996393272208, "included_in_sum": true, "exclusion_reason": null}, {"interaction_id": 1021, "state": "closed", "start_index": 3658, "end_index": 3665, "previous_distance": 18.258000000000266, "previous_time": 3, "distance": 0.20800000000008367, "movement_time": 7, "movement_energy": 0.004882399887331126, "total_break_evidence": 9.02504129182422, "base_energy": 9.02992369171155, "age": 9, "time_weight": 0.9954445161416, "effective_contribution": 8.988788020091375, "included_in_sum": true, "exclusion_reason": null}], "undefined_reason": null, "zero_reason": null}
+{"break_index": 3667, "break_close": 3332.948, "stored_energy": 35.000604677817456, "stored_median": 1.8014079186023797, "barrier_ratio": 19.429583003594566, "barrier_cost": 5.93623904670494, "break_evidence": 6.086508509457325}
+Unattributed breaks: 0
+Invalidated reactions: 51
+{"zone_id": 5, "interaction_id": 6, "reaction_index": 29, "reaction_type": "support", "break_index": 32, "break_datetime": "2025-01-03 03:00:00", "break_close": 2652.805, "restored_origin_zone_id": 7, "restored_interaction_id": 5, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 12, "interaction_id": 22, "reaction_index": 78, "reaction_type": "resistance", "break_index": 81, "break_datetime": "2025-01-07 06:00:00", "break_close": 2648.255, "restored_origin_zone_id": 11, "restored_interaction_id": 21, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 30, "interaction_id": 71, "reaction_index": 218, "reaction_type": "resistance", "break_index": 221, "break_datetime": "2025-01-15 08:00:00", "break_close": 2693.565, "restored_origin_zone_id": 31, "restored_interaction_id": 70, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 36, "interaction_id": 81, "reaction_index": 261, "reaction_type": "support", "break_index": 263, "break_datetime": "2025-01-17 04:00:00", "break_close": 2704.975, "restored_origin_zone_id": 38, "restored_interaction_id": 80, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 56, "interaction_id": 113, "reaction_index": 376, "reaction_type": "resistance", "break_index": 379, "break_datetime": "2025-01-24 07:00:00", "break_close": 2778.415, "restored_origin_zone_id": 57, "restored_interaction_id": 112, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 50, "interaction_id": 115, "reaction_index": 392, "reaction_type": "support", "break_index": 397, "break_datetime": "2025-01-27 02:00:00", "break_close": 2749.285, "restored_origin_zone_id": 59, "restored_interaction_id": 114, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 59, "interaction_id": 140, "reaction_index": 504, "reaction_type": "support", "break_index": 507, "break_datetime": "2025-02-02 21:00:00", "break_close": 2777.925, "restored_origin_zone_id": 74, "restored_interaction_id": 139, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 84, "interaction_id": 155, "reaction_index": 567, "reaction_type": "support", "break_index": 571, "break_datetime": "2025-02-05 15:00:00", "break_close": 2862.485, "restored_origin_zone_id": 83, "restored_interaction_id": 154, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 91, "interaction_id": 164, "reaction_index": 607, "reaction_type": "support", "break_index": 610, "break_datetime": "2025-02-07 08:00:00", "break_close": 2862.418, "restored_origin_zone_id": 86, "restored_interaction_id": 163, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 95, "interaction_id": 168, "reaction_index": 630, "reaction_type": "resistance", "break_index": 634, "break_datetime": "2025-02-10 09:00:00", "break_close": 2908.565, "restored_origin_zone_id": 92, "restored_interaction_id": 167, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 97, "interaction_id": 172, "reaction_index": 653, "reaction_type": "support", "break_index": 655, "break_datetime": "2025-02-11 07:00:00", "break_close": 2889.325, "restored_origin_zone_id": 98, "restored_interaction_id": 171, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 100, "interaction_id": 175, "reaction_index": 660, "reaction_type": "support", "break_index": 663, "break_datetime": "2025-02-11 15:00:00", "break_close": 2897.345, "restored_origin_zone_id": 99, "restored_interaction_id": 174, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 97, "interaction_id": 183, "reaction_index": 680, "reaction_type": "resistance", "break_index": 682, "break_datetime": "2025-02-12 11:00:00", "break_close": 2902.285, "restored_origin_zone_id": 93, "restored_interaction_id": 182, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 103, "interaction_id": 196, "reaction_index": 734, "reaction_type": "resistance", "break_index": 737, "break_datetime": "2025-02-16 21:00:00", "break_close": 2899.005, "restored_origin_zone_id": 80, "restored_interaction_id": 195, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 114, "interaction_id": 213, "reaction_index": 775, "reaction_type": "resistance", "break_index": 780, "break_datetime": "2025-02-18 20:00:00", "break_close": 2938.255, "restored_origin_zone_id": 113, "restored_interaction_id": 212, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 150, "interaction_id": 330, "reaction_index": 1175, "reaction_type": "resistance", "break_index": 1180, "break_datetime": "2025-03-14 04:00:00", "break_close": 2998.595, "restored_origin_zone_id": 148, "restored_interaction_id": 329, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 157, "interaction_id": 343, "reaction_index": 1208, "reaction_type": "resistance", "break_index": 1214, "break_datetime": "2025-03-17 15:00:00", "break_close": 3000.425, "restored_origin_zone_id": 148, "restored_interaction_id": 342, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 160, "interaction_id": 348, "reaction_index": 1226, "reaction_type": "resistance", "break_index": 1229, "break_datetime": "2025-03-18 07:00:00", "break_close": 3034.048, "restored_origin_zone_id": 159, "restored_interaction_id": 347, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 196, "interaction_id": 422, "reaction_index": 1492, "reaction_type": "support", "break_index": 1496, "break_datetime": "2025-04-03 00:00:00", "break_close": 3140.125, "restored_origin_zone_id": 195, "restored_interaction_id": 421, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 159, "interaction_id": 452, "reaction_index": 1586, "reaction_type": "resistance", "break_index": 1588, "break_datetime": "2025-04-09 00:00:00", "break_close": 3011.985, "restored_origin_zone_id": 209, "restored_interaction_id": 451, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 226, "interaction_id": 489, "reaction_index": 1743, "reaction_type": "resistance", "break_index": 1745, "break_datetime": "2025-04-20 20:00:00", "break_close": 3368.525, "restored_origin_zone_id": 231, "restored_interaction_id": 488, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 237, "interaction_id": 494, "reaction_index": 1764, "reaction_type": "resistance", "break_index": 1766, "break_datetime": "2025-04-21 18:00:00", "break_close": 3430.685, "restored_origin_zone_id": 236, "restored_interaction_id": 493, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 236, "interaction_id": 500, "reaction_index": 1781, "reaction_type": "support", "break_index": 1784, "break_datetime": "2025-04-22 12:00:00", "break_close": 3392.785, "restored_origin_zone_id": 241, "restored_interaction_id": 499, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 233, "interaction_id": 501, "reaction_index": 1784, "reaction_type": "support", "break_index": 1789, "break_datetime": "2025-04-22 18:00:00", "break_close": 3327.255, "restored_origin_zone_id": 241, "restored_interaction_id": 499, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 242, "interaction_id": 502, "reaction_index": 1787, "reaction_type": "support", "break_index": 1789, "break_datetime": "2025-04-22 18:00:00", "break_close": 3327.255, "restored_origin_zone_id": 241, "restored_interaction_id": 499, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 229, "interaction_id": 505, "reaction_index": 1794, "reaction_type": "support", "break_index": 1796, "break_datetime": "2025-04-23 01:00:00", "break_close": 3318.725, "restored_origin_zone_id": 243, "restored_interaction_id": 504, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 228, "interaction_id": 516, "reaction_index": 1838, "reaction_type": "support", "break_index": 1840, "break_datetime": "2025-04-24 23:00:00", "break_close": 3323.345, "restored_origin_zone_id": 242, "restored_interaction_id": 515, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 250, "interaction_id": 519, "reaction_index": 1859, "reaction_type": "support", "break_index": 1861, "break_datetime": "2025-04-27 21:00:00", "break_close": 3280.715, "restored_origin_zone_id": 249, "restored_interaction_id": 518, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 220, "interaction_id": 542, "reaction_index": 1936, "reaction_type": "support", "break_index": 1940, "break_datetime": "2025-05-01 07:00:00", "break_close": 3205.155, "restored_origin_zone_id": 256, "restored_interaction_id": 541, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 215, "interaction_id": 583, "reaction_index": 2097, "reaction_type": "support", "break_index": 2100, "break_datetime": "2025-05-12 06:00:00", "break_close": 3207.625, "restored_origin_zone_id": 245, "restored_interaction_id": 582, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 272, "interaction_id": 588, "reaction_index": 2111, "reaction_type": "support", "break_index": 2114, "break_datetime": "2025-05-12 21:00:00", "break_close": 3224.985, "restored_origin_zone_id": 256, "restored_interaction_id": 587, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 216, "interaction_id": 610, "reaction_index": 2196, "reaction_type": "resistance", "break_index": 2202, "break_datetime": "2025-05-16 16:00:00", "break_close": 3202.465, "restored_origin_zone_id": 276, "restored_interaction_id": 609, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 228, "interaction_id": 651, "reaction_index": 2334, "reaction_type": "resistance", "break_index": 2339, "break_datetime": "2025-05-26 18:00:00", "break_close": 3347.438, "restored_origin_zone_id": 246, "restored_interaction_id": 650, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 285, "interaction_id": 688, "reaction_index": 2473, "reaction_type": "resistance", "break_index": 2478, "break_datetime": "2025-06-03 19:00:00", "break_close": 3359.698, "restored_origin_zone_id": 281, "restored_interaction_id": 687, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 285, "interaction_id": 689, "reaction_index": 2475, "reaction_type": "resistance", "break_index": 2478, "break_datetime": "2025-06-03 19:00:00", "break_close": 3359.698, "restored_origin_zone_id": 281, "restored_interaction_id": 687, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 284, "interaction_id": 709, "reaction_index": 2539, "reaction_type": "support", "break_index": 2545, "break_datetime": "2025-06-06 16:00:00", "break_close": 3309.625, "restored_origin_zone_id": 264, "restored_interaction_id": 708, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 305, "interaction_id": 766, "reaction_index": 2749, "reaction_type": "support", "break_index": 2754, "break_datetime": "2025-06-19 21:00:00", "break_close": 3356.198, "restored_origin_zone_id": 288, "restored_interaction_id": 765, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 305, "interaction_id": 767, "reaction_index": 2751, "reaction_type": "support", "break_index": 2754, "break_datetime": "2025-06-19 21:00:00", "break_close": 3356.198, "restored_origin_zone_id": 288, "restored_interaction_id": 765, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 296, "interaction_id": 782, "reaction_index": 2793, "reaction_type": "support", "break_index": 2796, "break_datetime": "2025-06-23 16:00:00", "break_close": 3367.955, "restored_origin_zone_id": 303, "restored_interaction_id": 781, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 293, "interaction_id": 808, "reaction_index": 2910, "reaction_type": "resistance", "break_index": 2912, "break_datetime": "2025-06-30 18:00:00", "break_close": 3311.115, "restored_origin_zone_id": 244, "restored_interaction_id": 807, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 294, "interaction_id": 820, "reaction_index": 2969, "reaction_type": "support", "break_index": 2972, "break_datetime": "2025-07-03 08:00:00", "break_close": 3324.195, "restored_origin_zone_id": 307, "restored_interaction_id": 819, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 311, "interaction_id": 824, "reaction_index": 2987, "reaction_type": "resistance", "break_index": 2989, "break_datetime": "2025-07-04 02:00:00", "break_close": 3342.445, "restored_origin_zone_id": 266, "restored_interaction_id": 823, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 294, "interaction_id": 859, "reaction_index": 3102, "reaction_type": "resistance", "break_index": 3106, "break_datetime": "2025-07-11 08:00:00", "break_close": 3354.919, "restored_origin_zone_id": 266, "restored_interaction_id": 858, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 312, "interaction_id": 873, "reaction_index": 3153, "reaction_type": "support", "break_index": 3155, "break_datetime": "2025-07-15 11:00:00", "break_close": 3328.765, "restored_origin_zone_id": 264, "restored_interaction_id": 872, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 303, "interaction_id": 901, "reaction_index": 3264, "reaction_type": "resistance", "break_index": 3267, "break_datetime": "2025-07-22 08:00:00", "break_close": 3407.375, "restored_origin_zone_id": 304, "restored_interaction_id": 900, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 318, "interaction_id": 907, "reaction_index": 3291, "reaction_type": "support", "break_index": 3293, "break_datetime": "2025-07-23 11:00:00", "break_close": 3398.015, "restored_origin_zone_id": 299, "restored_interaction_id": 906, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 296, "interaction_id": 912, "reaction_index": 3304, "reaction_type": "support", "break_index": 3308, "break_datetime": "2025-07-24 03:00:00", "break_close": 3367.395, "restored_origin_zone_id": 320, "restored_interaction_id": 911, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 291, "interaction_id": 943, "reaction_index": 3406, "reaction_type": "support", "break_index": 3408, "break_datetime": "2025-07-30 11:00:00", "break_close": 3290.235, "restored_origin_zone_id": 292, "restored_interaction_id": 942, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 338, "interaction_id": 1017, "reaction_index": 3642, "reaction_type": "resistance", "break_index": 3645, "break_datetime": "2025-08-13 19:00:00", "break_close": 3362.565, "restored_origin_zone_id": 337, "restored_interaction_id": 1016, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 309, "interaction_id": 1025, "reaction_index": 3677, "reaction_type": "support", "break_index": 3679, "break_datetime": "2025-08-15 06:00:00", "break_close": 3337.548, "restored_origin_zone_id": 336, "restored_interaction_id": 1024, "reason": "origin_broken_before_opposite_reaction"}
+{"zone_id": 295, "interaction_id": 1030, "reaction_index": 3688, "reaction_type": "support", "break_index": 3691, "break_datetime": "2025-08-17 19:00:00", "break_close": 3326.895, "restored_origin_zone_id": 294, "restored_interaction_id": 1029, "reason": "origin_broken_before_opposite_reaction"}
+Confirmed outgoing C2 breaks: 10
+{"broken_zone_id": 23, "broken_zone_type": "support", "break_index": 198, "confirmation_index": 199, "pattern_confirmation_index": 199, "origin_zone_id": 32, "origin_zone_type": "resistance", "interaction_id": 65, "same_zone_role_change": false, "broken_zone_energy_at_break": 0.5458490375937888, "median_active_zone_energy_at_break": 4.7759090218761, "break_evidence": 0.01297812033368443}
+{"broken_zone_id": 126, "broken_zone_type": "resistance", "break_index": 879, "confirmation_index": 880, "pattern_confirmation_index": 880, "origin_zone_id": 123, "origin_zone_type": "support", "interaction_id": 245, "same_zone_role_change": false, "broken_zone_energy_at_break": null, "median_active_zone_energy_at_break": 3.5709193016590524, "break_evidence": null}
+{"broken_zone_id": 147, "broken_zone_type": "resistance", "break_index": 1161, "confirmation_index": 1162, "pattern_confirmation_index": 1162, "origin_zone_id": 128, "origin_zone_type": "support", "interaction_id": 327, "same_zone_role_change": false, "broken_zone_energy_at_break": null, "median_active_zone_energy_at_break": 3.9384412232887906, "break_evidence": null}
+{"broken_zone_id": 165, "broken_zone_type": "resistance", "break_index": 1258, "confirmation_index": 1259, "pattern_confirmation_index": 1259, "origin_zone_id": 161, "origin_zone_type": "support", "interaction_id": 354, "same_zone_role_change": false, "broken_zone_energy_at_break": 1.224808307959086, "median_active_zone_energy_at_break": 3.6902299119529367, "break_evidence": 0.10450539894771196}
+{"broken_zone_id": 176, "broken_zone_type": "resistance", "break_index": 1356, "confirmation_index": 1357, "pattern_confirmation_index": 1357, "origin_zone_id": 174, "origin_zone_type": "support", "interaction_id": 384, "same_zone_role_change": false, "broken_zone_energy_at_break": null, "median_active_zone_energy_at_break": 4.432633556152116, "break_evidence": null}
+{"broken_zone_id": 168, "broken_zone_type": "resistance", "break_index": 1595, "confirmation_index": 1596, "pattern_confirmation_index": 1596, "origin_zone_id": 203, "origin_zone_type": "support", "interaction_id": 454, "same_zone_role_change": false, "broken_zone_energy_at_break": 7.842283673549384, "median_active_zone_energy_at_break": 3.6963733228730558, "break_evidence": 1.7049759166430296}
+{"broken_zone_id": 256, "broken_zone_type": "resistance", "break_index": 2241, "confirmation_index": 2242, "pattern_confirmation_index": 2242, "origin_zone_id": 272, "origin_zone_type": "support", "interaction_id": 622, "same_zone_role_change": false, "broken_zone_energy_at_break": 6.6809592803668725, "median_active_zone_energy_at_break": 3.2840176441921756, "break_evidence": 1.636805208519619}
+{"broken_zone_id": 231, "broken_zone_type": "resistance", "break_index": 2256, "confirmation_index": 2257, "pattern_confirmation_index": 2257, "origin_zone_id": 230, "origin_zone_type": "support", "interaction_id": 626, "same_zone_role_change": false, "broken_zone_energy_at_break": 4.764561039016973, "median_active_zone_energy_at_break": 3.0696083655652178, "break_evidence": 1.226489043678765}
+{"broken_zone_id": 285, "broken_zone_type": "support", "break_index": 2469, "confirmation_index": 2470, "pattern_confirmation_index": 2470, "origin_zone_id": 264, "origin_zone_type": "resistance", "interaction_id": 686, "same_zone_role_change": false, "broken_zone_energy_at_break": 0.7490497882733138, "median_active_zone_energy_at_break": 2.841170822527897, "break_evidence": 0.06719751552641097}
+{"broken_zone_id": 280, "broken_zone_type": "support", "break_index": 3411, "confirmation_index": 3412, "pattern_confirmation_index": 3412, "origin_zone_id": 268, "origin_zone_type": "resistance", "interaction_id": 945, "same_zone_role_change": false, "broken_zone_energy_at_break": 35.84252869325263, "median_active_zone_energy_at_break": 2.130393406472376, "break_evidence": 5.649183561206197}
+Rejected reactions: 186
+{"zone_id": 3, "reaction_index": 11, "reaction_type": "resistance", "rejected_at": 15, "reason": "close_exited_against_reaction"}
+{"zone_id": 6, "reaction_index": 21, "reaction_type": "resistance", "rejected_at": 24, "reason": "close_exited_against_reaction"}
+{"zone_id": 14, "reaction_index": 56, "reaction_type": "resistance", "rejected_at": 58, "reason": "close_exited_against_reaction"}
+{"zone_id": 3, "reaction_index": 71, "reaction_type": "resistance", "rejected_at": 74, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 3, "reaction_index": 73, "reaction_type": "resistance", "rejected_at": 77, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 20, "reaction_index": 130, "reaction_type": "support", "rejected_at": 133, "reason": "close_exited_against_reaction"}
+{"zone_id": 31, "reaction_index": 186, "reaction_type": "resistance", "rejected_at": 191, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 27, "reaction_index": 276, "reaction_type": "support", "rejected_at": 279, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 42, "reaction_index": 290, "reaction_type": "support", "rejected_at": 294, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 45, "reaction_index": 319, "reaction_type": "resistance", "rejected_at": 321, "reason": "close_exited_against_reaction"}
+{"zone_id": 47, "reaction_index": 322, "reaction_type": "resistance", "rejected_at": 324, "reason": "close_exited_against_reaction"}
+{"zone_id": 50, "reaction_index": 348, "reaction_type": "resistance", "rejected_at": 351, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 58, "reaction_index": 378, "reaction_type": "resistance", "rejected_at": 380, "reason": "close_exited_against_reaction"}
+{"zone_id": 60, "reaction_index": 381, "reaction_type": "support", "rejected_at": 383, "reason": "close_exited_against_reaction"}
+{"zone_id": 61, "reaction_index": 383, "reaction_type": "support", "rejected_at": 389, "reason": "close_exited_against_reaction"}
+{"zone_id": 62, "reaction_index": 389, "reaction_type": "support", "rejected_at": 391, "reason": "close_exited_against_reaction"}
+{"zone_id": 60, "reaction_index": 467, "reaction_type": "resistance", "rejected_at": 471, "reason": "close_exited_against_reaction"}
+{"zone_id": 70, "reaction_index": 480, "reaction_type": "resistance", "rejected_at": 483, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 72, "reaction_index": 482, "reaction_type": "resistance", "rejected_at": 486, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 70, "reaction_index": 502, "reaction_type": "support", "rejected_at": 504, "reason": "close_exited_against_reaction"}
+{"zone_id": 75, "reaction_index": 514, "reaction_type": "resistance", "rejected_at": 516, "reason": "close_exited_against_reaction"}
+{"zone_id": 79, "reaction_index": 543, "reaction_type": "resistance", "rejected_at": 547, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 79, "reaction_index": 546, "reaction_type": "resistance", "rejected_at": 550, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 79, "reaction_index": 549, "reaction_type": "resistance", "rejected_at": 553, "reason": "close_exited_against_reaction"}
+{"zone_id": 85, "reaction_index": 573, "reaction_type": "resistance", "rejected_at": 575, "reason": "close_exited_against_reaction"}
+{"zone_id": 87, "reaction_index": 577, "reaction_type": "support", "rejected_at": 580, "reason": "close_exited_against_reaction"}
+{"zone_id": 88, "reaction_index": 590, "reaction_type": "resistance", "rejected_at": 595, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 89, "reaction_index": 594, "reaction_type": "resistance", "rejected_at": 596, "reason": "close_exited_against_reaction"}
+{"zone_id": 92, "reaction_index": 614, "reaction_type": "support", "rejected_at": 617, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 92, "reaction_index": 616, "reaction_type": "support", "rejected_at": 620, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 94, "reaction_index": 621, "reaction_type": "resistance", "rejected_at": 624, "reason": "close_exited_against_reaction"}
+{"zone_id": 96, "reaction_index": 638, "reaction_type": "resistance", "rejected_at": 642, "reason": "close_exited_against_reaction"}
+{"zone_id": 102, "reaction_index": 689, "reaction_type": "resistance", "rejected_at": 692, "reason": "close_exited_against_reaction"}
+{"zone_id": 105, "reaction_index": 695, "reaction_type": "support", "rejected_at": 697, "reason": "close_exited_against_reaction"}
+{"zone_id": 116, "reaction_index": 800, "reaction_type": "resistance", "rejected_at": 804, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 117, "reaction_index": 803, "reaction_type": "resistance", "rejected_at": 806, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 119, "reaction_index": 827, "reaction_type": "support", "rejected_at": 831, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 119, "reaction_index": 830, "reaction_type": "support", "rejected_at": 833, "reason": "close_exited_against_reaction"}
+{"zone_id": 124, "reaction_index": 872, "reaction_type": "support", "rejected_at": 874, "reason": "close_exited_against_reaction"}
+{"zone_id": 105, "reaction_index": 890, "reaction_type": "resistance", "rejected_at": 893, "reason": "close_exited_against_reaction"}
+{"zone_id": 130, "reaction_index": 910, "reaction_type": "resistance", "rejected_at": 916, "reason": "close_exited_against_reaction"}
+{"zone_id": 129, "reaction_index": 919, "reaction_type": "support", "rejected_at": 923, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 129, "reaction_index": 922, "reaction_type": "support", "rejected_at": 925, "reason": "close_exited_against_reaction"}
+{"zone_id": 80, "reaction_index": 938, "reaction_type": "support", "rejected_at": 943, "reason": "close_exited_against_reaction"}
+{"zone_id": 92, "reaction_index": 944, "reaction_type": "support", "rejected_at": 949, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 129, "reaction_index": 984, "reaction_type": "resistance", "rejected_at": 987, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 130, "reaction_index": 1003, "reaction_type": "resistance", "rejected_at": 1006, "reason": "close_exited_against_reaction"}
+{"zone_id": 107, "reaction_index": 1007, "reaction_type": "support", "rejected_at": 1010, "reason": "close_exited_against_reaction"}
+{"zone_id": 129, "reaction_index": 1088, "reaction_type": "support", "rejected_at": 1091, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 129, "reaction_index": 1104, "reaction_type": "resistance", "rejected_at": 1110, "reason": "close_exited_against_reaction"}
+{"zone_id": 107, "reaction_index": 1123, "reaction_type": "support", "rejected_at": 1127, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 148, "reaction_index": 1164, "reaction_type": "resistance", "rejected_at": 1168, "reason": "close_exited_against_reaction"}
+{"zone_id": 151, "reaction_index": 1177, "reaction_type": "resistance", "rejected_at": 1179, "reason": "close_exited_against_reaction"}
+{"zone_id": 161, "reaction_index": 1230, "reaction_type": "resistance", "rejected_at": 1234, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 161, "reaction_index": 1233, "reaction_type": "resistance", "rejected_at": 1237, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 161, "reaction_index": 1236, "reaction_type": "resistance", "rejected_at": 1240, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 161, "reaction_index": 1239, "reaction_type": "resistance", "rejected_at": 1244, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 162, "reaction_index": 1243, "reaction_type": "resistance", "rejected_at": 1245, "reason": "close_exited_against_reaction"}
+{"zone_id": 161, "reaction_index": 1246, "reaction_type": "support", "rejected_at": 1248, "reason": "close_exited_against_reaction"}
+{"zone_id": 166, "reaction_index": 1259, "reaction_type": "resistance", "rejected_at": 1263, "reason": "close_exited_against_reaction"}
+{"zone_id": 163, "reaction_index": 1279, "reaction_type": "resistance", "rejected_at": 1283, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 169, "reaction_index": 1282, "reaction_type": "resistance", "rejected_at": 1285, "reason": "close_exited_against_reaction"}
+{"zone_id": 174, "reaction_index": 1301, "reaction_type": "resistance", "rejected_at": 1305, "reason": "close_exited_against_reaction"}
+{"zone_id": 159, "reaction_index": 1324, "reaction_type": "support", "rejected_at": 1328, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 179, "reaction_index": 1371, "reaction_type": "resistance", "rejected_at": 1374, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 181, "reaction_index": 1375, "reaction_type": "resistance", "rejected_at": 1378, "reason": "close_exited_against_reaction"}
+{"zone_id": 183, "reaction_index": 1397, "reaction_type": "resistance", "rejected_at": 1401, "reason": "close_exited_against_reaction"}
+{"zone_id": 184, "reaction_index": 1403, "reaction_type": "resistance", "rejected_at": 1406, "reason": "close_exited_against_reaction"}
+{"zone_id": 190, "reaction_index": 1429, "reaction_type": "resistance", "rejected_at": 1432, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 190, "reaction_index": 1431, "reaction_type": "resistance", "rejected_at": 1434, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 190, "reaction_index": 1438, "reaction_type": "resistance", "rejected_at": 1447, "reason": "close_exited_against_reaction"}
+{"zone_id": 196, "reaction_index": 1494, "reaction_type": "support", "rejected_at": 1496, "reason": "close_exited_against_reaction"}
+{"zone_id": 202, "reaction_index": 1559, "reaction_type": "resistance", "rejected_at": 1564, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 202, "reaction_index": 1563, "reaction_type": "resistance", "rejected_at": 1567, "reason": "close_exited_against_reaction"}
+{"zone_id": 207, "reaction_index": 1580, "reaction_type": "support", "rejected_at": 1584, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 210, "reaction_index": 1601, "reaction_type": "resistance", "rejected_at": 1604, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 200, "reaction_index": 1610, "reaction_type": "resistance", "rejected_at": 1613, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 220, "reaction_index": 1661, "reaction_type": "support", "rejected_at": 1664, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 220, "reaction_index": 1674, "reaction_type": "resistance", "rejected_at": 1678, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 220, "reaction_index": 1677, "reaction_type": "resistance", "rejected_at": 1680, "reason": "close_exited_against_reaction"}
+{"zone_id": 220, "reaction_index": 1681, "reaction_type": "support", "rejected_at": 1684, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 220, "reaction_index": 1683, "reaction_type": "support", "rejected_at": 1690, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 224, "reaction_index": 1707, "reaction_type": "resistance", "rejected_at": 1711, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 224, "reaction_index": 1710, "reaction_type": "resistance", "rejected_at": 1714, "reason": "close_exited_against_reaction"}
+{"zone_id": 225, "reaction_index": 1715, "reaction_type": "resistance", "rejected_at": 1717, "reason": "close_exited_against_reaction"}
+{"zone_id": 234, "reaction_index": 1752, "reaction_type": "resistance", "rejected_at": 1756, "reason": "close_exited_against_reaction"}
+{"zone_id": 240, "reaction_index": 1773, "reaction_type": "support", "rejected_at": 1775, "reason": "close_exited_against_reaction"}
+{"zone_id": 230, "reaction_index": 1810, "reaction_type": "resistance", "rejected_at": 1812, "reason": "close_exited_against_reaction"}
+{"zone_id": 248, "reaction_index": 1842, "reaction_type": "support", "rejected_at": 1847, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 248, "reaction_index": 1846, "reaction_type": "support", "rejected_at": 1849, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 248, "reaction_index": 1848, "reaction_type": "support", "rejected_at": 1850, "reason": "close_exited_against_reaction"}
+{"zone_id": 254, "reaction_index": 1905, "reaction_type": "support", "rejected_at": 1907, "reason": "close_exited_against_reaction"}
+{"zone_id": 255, "reaction_index": 1919, "reaction_type": "resistance", "rejected_at": 1922, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 219, "reaction_index": 1930, "reaction_type": "support", "rejected_at": 1932, "reason": "close_exited_against_reaction"}
+{"zone_id": 259, "reaction_index": 1974, "reaction_type": "resistance", "rejected_at": 1976, "reason": "close_exited_against_reaction"}
+{"zone_id": 253, "reaction_index": 1994, "reaction_type": "resistance", "rejected_at": 1997, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 253, "reaction_index": 1996, "reaction_type": "resistance", "rejected_at": 1999, "reason": "close_exited_against_reaction"}
+{"zone_id": 262, "reaction_index": 2006, "reaction_type": "resistance", "rejected_at": 2010, "reason": "close_exited_against_reaction"}
+{"zone_id": 236, "reaction_index": 2015, "reaction_type": "resistance", "rejected_at": 2017, "reason": "close_exited_against_reaction"}
+{"zone_id": 265, "reaction_index": 2035, "reaction_type": "support", "rejected_at": 2038, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 265, "reaction_index": 2037, "reaction_type": "support", "rejected_at": 2040, "reason": "close_exited_against_reaction"}
+{"zone_id": 267, "reaction_index": 2054, "reaction_type": "resistance", "rejected_at": 2056, "reason": "close_exited_against_reaction"}
+{"zone_id": 266, "reaction_index": 2072, "reaction_type": "resistance", "rejected_at": 2075, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 229, "reaction_index": 2074, "reaction_type": "resistance", "rejected_at": 2079, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 269, "reaction_index": 2078, "reaction_type": "resistance", "rejected_at": 2082, "reason": "close_exited_against_reaction"}
+{"zone_id": 217, "reaction_index": 2145, "reaction_type": "support", "rejected_at": 2147, "reason": "close_exited_against_reaction"}
+{"zone_id": 257, "reaction_index": 2176, "reaction_type": "resistance", "rejected_at": 2179, "reason": "close_exited_against_reaction"}
+{"zone_id": 216, "reaction_index": 2199, "reaction_type": "resistance", "rejected_at": 2202, "reason": "close_exited_against_reaction"}
+{"zone_id": 220, "reaction_index": 2206, "reaction_type": "support", "rejected_at": 2210, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 220, "reaction_index": 2228, "reaction_type": "support", "rejected_at": 2230, "reason": "close_exited_against_reaction"}
+{"zone_id": 270, "reaction_index": 2318, "reaction_type": "support", "rejected_at": 2321, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 228, "reaction_index": 2336, "reaction_type": "resistance", "rejected_at": 2339, "reason": "close_exited_against_reaction"}
+{"zone_id": 250, "reaction_index": 2358, "reaction_type": "resistance", "rejected_at": 2361, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 224, "reaction_index": 2360, "reaction_type": "resistance", "rejected_at": 2365, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 224, "reaction_index": 2369, "reaction_type": "resistance", "rejected_at": 2371, "reason": "close_exited_against_reaction"}
+{"zone_id": 230, "reaction_index": 2377, "reaction_type": "support", "rejected_at": 2381, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 248, "reaction_index": 2426, "reaction_type": "resistance", "rejected_at": 2429, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 248, "reaction_index": 2428, "reaction_type": "resistance", "rejected_at": 2431, "reason": "close_exited_against_reaction"}
+{"zone_id": 264, "reaction_index": 2457, "reaction_type": "support", "rejected_at": 2462, "reason": "close_exited_against_reaction"}
+{"zone_id": 288, "reaction_index": 2493, "reaction_type": "resistance", "rejected_at": 2498, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 288, "reaction_index": 2497, "reaction_type": "resistance", "rejected_at": 2504, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 2541, "reaction_type": "support", "rejected_at": 2543, "reason": "close_exited_against_reaction"}
+{"zone_id": 290, "reaction_index": 2558, "reaction_type": "support", "rejected_at": 2562, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 2569, "reaction_type": "support", "rejected_at": 2571, "reason": "close_exited_against_reaction"}
+{"zone_id": 293, "reaction_index": 2574, "reaction_type": "resistance", "rejected_at": 2576, "reason": "close_exited_against_reaction"}
+{"zone_id": 264, "reaction_index": 2616, "reaction_type": "resistance", "rejected_at": 2619, "reason": "close_exited_against_reaction"}
+{"zone_id": 263, "reaction_index": 2647, "reaction_type": "support", "rejected_at": 2651, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 263, "reaction_index": 2650, "reaction_type": "support", "rejected_at": 2657, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 299, "reaction_index": 2661, "reaction_type": "resistance", "rejected_at": 2664, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 263, "reaction_index": 2670, "reaction_type": "support", "rejected_at": 2674, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 263, "reaction_index": 2673, "reaction_type": "support", "rejected_at": 2676, "reason": "close_exited_against_reaction"}
+{"zone_id": 288, "reaction_index": 2716, "reaction_type": "support", "rejected_at": 2719, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 288, "reaction_index": 2730, "reaction_type": "resistance", "rejected_at": 2734, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 307, "reaction_index": 2777, "reaction_type": "support", "rejected_at": 2782, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 304, "reaction_index": 2789, "reaction_type": "resistance", "rejected_at": 2792, "reason": "close_exited_against_reaction"}
+{"zone_id": 266, "reaction_index": 2818, "reaction_type": "resistance", "rejected_at": 2821, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 2820, "reaction_type": "resistance", "rejected_at": 2823, "reason": "close_exited_against_reaction"}
+{"zone_id": 269, "reaction_index": 2824, "reaction_type": "resistance", "rejected_at": 2828, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 269, "reaction_index": 2827, "reaction_type": "resistance", "rejected_at": 2830, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 2831, "reaction_type": "support", "rejected_at": 2835, "reason": "close_exited_against_reaction"}
+{"zone_id": 269, "reaction_index": 2839, "reaction_type": "resistance", "rejected_at": 2842, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 269, "reaction_index": 2841, "reaction_type": "resistance", "rejected_at": 2844, "reason": "close_exited_against_reaction"}
+{"zone_id": 279, "reaction_index": 2868, "reaction_type": "support", "rejected_at": 2870, "reason": "close_exited_against_reaction"}
+{"zone_id": 244, "reaction_index": 2887, "reaction_type": "support", "rejected_at": 2890, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 308, "reaction_index": 2900, "reaction_type": "support", "rejected_at": 2903, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 280, "reaction_index": 2903, "reaction_type": "resistance", "rejected_at": 2907, "reason": "close_exited_against_reaction"}
+{"zone_id": 290, "reaction_index": 2912, "reaction_type": "resistance", "rejected_at": 2916, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 290, "reaction_index": 2915, "reaction_type": "resistance", "rejected_at": 2918, "reason": "close_exited_against_reaction"}
+{"zone_id": 266, "reaction_index": 2981, "reaction_type": "support", "rejected_at": 2984, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 312, "reaction_index": 3019, "reaction_type": "resistance", "rejected_at": 3022, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 312, "reaction_index": 3021, "reaction_type": "resistance", "rejected_at": 3024, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 249, "reaction_index": 3026, "reaction_type": "support", "rejected_at": 3030, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 249, "reaction_index": 3029, "reaction_type": "support", "rejected_at": 3037, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 255, "reaction_index": 3065, "reaction_type": "resistance", "rejected_at": 3068, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 255, "reaction_index": 3067, "reaction_type": "resistance", "rejected_at": 3070, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 290, "reaction_index": 3069, "reaction_type": "resistance", "rejected_at": 3072, "reason": "close_exited_against_reaction"}
+{"zone_id": 255, "reaction_index": 3085, "reaction_type": "support", "rejected_at": 3088, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 3090, "reaction_type": "resistance", "rejected_at": 3093, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 3092, "reaction_type": "resistance", "rejected_at": 3095, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 307, "reaction_index": 3113, "reaction_type": "resistance", "rejected_at": 3115, "reason": "close_exited_against_reaction"}
+{"zone_id": 266, "reaction_index": 3156, "reaction_type": "support", "rejected_at": 3159, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 3158, "reaction_type": "support", "rejected_at": 3161, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 312, "reaction_index": 3169, "reaction_type": "resistance", "rejected_at": 3173, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 3193, "reaction_type": "support", "rejected_at": 3196, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 3195, "reaction_type": "support", "rejected_at": 3198, "reason": "close_exited_against_reaction"}
+{"zone_id": 312, "reaction_index": 3203, "reaction_type": "resistance", "rejected_at": 3206, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 312, "reaction_index": 3205, "reaction_type": "resistance", "rejected_at": 3207, "reason": "close_exited_against_reaction"}
+{"zone_id": 264, "reaction_index": 3238, "reaction_type": "resistance", "rejected_at": 3243, "reason": "close_exited_against_reaction"}
+{"zone_id": 237, "reaction_index": 3277, "reaction_type": "support", "rejected_at": 3279, "reason": "close_exited_against_reaction"}
+{"zone_id": 290, "reaction_index": 3366, "reaction_type": "resistance", "rejected_at": 3372, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 290, "reaction_index": 3371, "reaction_type": "resistance", "rejected_at": 3377, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 3388, "reaction_type": "resistance", "rejected_at": 3392, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 266, "reaction_index": 3391, "reaction_type": "resistance", "rejected_at": 3394, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 269, "reaction_index": 3398, "reaction_type": "resistance", "rejected_at": 3403, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 268, "reaction_index": 3419, "reaction_type": "resistance", "rejected_at": 3424, "reason": "close_exited_against_reaction"}
+{"zone_id": 283, "reaction_index": 3449, "reaction_type": "resistance", "rejected_at": 3451, "reason": "close_exited_against_reaction"}
+{"zone_id": 307, "reaction_index": 3466, "reaction_type": "resistance", "rejected_at": 3469, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 307, "reaction_index": 3468, "reaction_type": "resistance", "rejected_at": 3472, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 307, "reaction_index": 3471, "reaction_type": "resistance", "rejected_at": 3473, "reason": "close_exited_against_reaction"}
+{"zone_id": 304, "reaction_index": 3504, "reaction_type": "support", "rejected_at": 3507, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 304, "reaction_index": 3506, "reaction_type": "support", "rejected_at": 3509, "reason": "close_exited_against_reaction"}
+{"zone_id": 288, "reaction_index": 3513, "reaction_type": "support", "rejected_at": 3516, "reason": "close_exited_against_reaction"}
+{"zone_id": 331, "reaction_index": 3534, "reaction_type": "support", "rejected_at": 3536, "reason": "close_exited_against_reaction"}
+{"zone_id": 335, "reaction_index": 3544, "reaction_type": "resistance", "rejected_at": 3550, "reason": "close_exited_against_reaction"}
+{"zone_id": 307, "reaction_index": 3638, "reaction_type": "support", "rejected_at": 3642, "reason": "superseded_by_later_opposite_pattern"}
+{"zone_id": 307, "reaction_index": 3649, "reaction_type": "support", "rejected_at": 3653, "reason": "close_exited_against_reaction"}
+Pending reactions: 1
+{"zone_id": 294, "zone_state": "broken", "reaction_type": "support", "reaction_index": 3698, "reaction_datetime": "2025-08-18 02:00:00", "reaction_extreme": 3345.968, "pattern_confirmation_index": 3699, "zone_lower": 3343.305, "zone_upper": 3348.895, "confirmation_close_condition": "close > upper", "rejection_close_condition": "close < lower", "last_index": 3699, "last_datetime": "2025-08-18 03:00:00", "last_close": 3348.798, "candles_since_pattern": 0, "current_origin_zone_id": 340, "current_interaction_id": 1032, "current_origin_index": 3697, "status": "waiting_for_close_outside_zone"}
+Pending origin breaks: 0
+Resolved origin breaks: 10
+{"broken_zone_id": 23, "break_index": 198, "confirmation_index": 199, "origin_zone_id": 32, "interaction_id": 65}
+{"broken_zone_id": 126, "break_index": 879, "confirmation_index": 880, "origin_zone_id": 123, "interaction_id": 245}
+{"broken_zone_id": 147, "break_index": 1161, "confirmation_index": 1162, "origin_zone_id": 128, "interaction_id": 327}
+{"broken_zone_id": 165, "break_index": 1258, "confirmation_index": 1259, "origin_zone_id": 161, "interaction_id": 354}
+{"broken_zone_id": 176, "break_index": 1356, "confirmation_index": 1357, "origin_zone_id": 174, "interaction_id": 384}
+{"broken_zone_id": 168, "break_index": 1595, "confirmation_index": 1596, "origin_zone_id": 203, "interaction_id": 454}
+{"broken_zone_id": 256, "break_index": 2241, "confirmation_index": 2242, "origin_zone_id": 272, "interaction_id": 622}
+{"broken_zone_id": 231, "break_index": 2256, "confirmation_index": 2257, "origin_zone_id": 230, "interaction_id": 626}
+{"broken_zone_id": 285, "break_index": 2469, "confirmation_index": 2470, "origin_zone_id": 264, "interaction_id": 686}
+{"broken_zone_id": 280, "break_index": 3411, "confirmation_index": 3412, "origin_zone_id": 268, "interaction_id": 945}
