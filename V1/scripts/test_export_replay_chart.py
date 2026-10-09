@@ -6,6 +6,21 @@ from zone_energy.models import Candle, Interaction, InteractionState, Zone, Zone
 
 
 class ChartTests(unittest.TestCase):
+    def test_reference_window_does_not_claim_a_break(self):
+        bars = [Candle(datetime(2025,1,1)+timedelta(hours=i),105,110,100,106,0)
+                for i in range(4)]
+        origin = Zone(304,ZoneType.SUPPORT,ZoneState.ACTIVE,99,102,100,0)
+        reference = Zone(333,ZoneType.RESISTANCE,ZoneState.ACTIVE,108,112,110,0)
+        move = Interaction(986,304,InteractionState.OPEN,100,2)
+        prior = Interaction(985,333,InteractionState.OPEN,110,1)
+        origin.interactions = [move]
+        reference.interactions = [prior]
+        page = render_chart(bars,[origin,reference],origin,move,None,0,3,broken_zone=reference)
+        self.assertIn('Reference zone 333',page)
+        self.assertIn('zone 333, interaction 985',page)
+        self.assertNotIn('breaks:',page)
+        self.assertNotIn('Broken zone',page)
+
     def test_invalidation_break_can_be_selected_with_restored_interaction(self):
         context = {"unattributed_breaks":[], "invalidated_reactions":[
             {"zone_id":5,"interaction_id":6,"restored_interaction_id":5,

@@ -15,7 +15,9 @@ from zone_energy.models import ZoneType
 def render_chart(candles, zones, origin, move, break_index, first, last, invalidated_reactions=(), broken_zone=None,
                  reaction_confirmations=None, rejected_reactions=()):
     """Display raw patterns separately from reactions actually stored by replay."""
-    if not (0 <= first <= move.start_index <= break_index <= last < len(candles)):
+    if not (0 <= first <= move.start_index <= last < len(candles)) or (
+        break_index is not None and not move.start_index <= break_index <= last
+    ):
         raise ValueError("Chart window must contain the interaction start and break")
     width, height, left, top = 1500, 740, 85, 60
     plot_width, plot_height = 1370, 570
@@ -39,7 +41,8 @@ def render_chart(candles, zones, origin, move, break_index, first, last, invalid
         py = y(price)
         parts.append(f'<line x1="{left}" y1="{py}" x2="{left + plot_width}" y2="{py}" stroke="#e2e8f0"/>')
         label(5, py + 4, f"{price:.3f}")
-    bands = [(target, "Broken zone" if broken_zone else "Origin zone", "#ef4444")]
+    bands = [(target, ("Reference zone" if break_index is None else "Broken zone")
+              if broken_zone else "Origin zone", "#ef4444")]
     if target.id != origin.id:
         bands.append((origin, "Movement origin", "#2563eb"))
     for zone, title, color in bands:
@@ -118,6 +121,8 @@ def render_chart(candles, zones, origin, move, break_index, first, last, invalid
     for index, text, color in ((move.start_index, f"Interaction {move.id} starts", "#0f172a"),
                                 (break_index, f"Zone {target.id} breaks: {break_index}" if broken_zone
                                  else f"Origin breaks: {break_index}", "#b91c1c")):
+        if index is None:
+            continue
         px = x(index)
         parts.append(f'<line x1="{px}" y1="{top}" x2="{px}" y2="{top+plot_height}" stroke="{color}" stroke-dasharray="4 4"/>')
         label(max(left, min(px - 70, width - 230)), 25 if index == move.start_index else 45, text, color)
@@ -126,8 +131,10 @@ def render_chart(candles, zones, origin, move, break_index, first, last, invalid
             '<title>بررسی مسیر واقعی قیمت</title><style>body{font-family:Tahoma,sans-serif;margin:24px;background:#f8fafc;color:#0f172a}'
             'svg{width:100%;min-width:1000px} .chart{overflow:auto;background:white}table{border-collapse:collapse;width:100%;font-size:12px}'
             'td,th{border:1px solid #cbd5e1;padding:6px}tr:nth-child(even){background:white}</style>'
-            '<h2>کندل‌های واقعی بین واکنش و شکست زون</h2>'
-            '<p>محدوده قرمز: زون شکسته‌شده. اگر مبدأ حرکت زون دیگری باشد، محدوده آن آبی نمایش داده می‌شود. '
+            '<h2>کندل‌های واقعی و واکنش‌های ثبت‌شده</h2>'
+            + ('<p>محدوده قرمز: زون مرجع. محدوده آبی: زون مبدأ حرکت. ' if break_index is None else
+            '<p>محدوده قرمز: زون شکسته‌شده. اگر مبدأ حرکت زون دیگری باشد، محدوده آن آبی نمایش داده می‌شود. ')
+            +
             'محدوده‌ها ثابت‌اند؛ این رنگ‌ها وضعیت فعال یا شکسته زون در تمام بازه را نشان نمی‌دهند.</p>'
             '<p>دایره آبی S: کف سه کندلی؛ دایره بنفش R: سقف سه کندلی. الگو در کندل بعد مشخص می‌شود؛ تأیید واکنش به بسته‌شدن بیرون زون نیاز دارد و زمان آن در جدول آمده است. × خاکستری: الگوی ردشده. '
             'در کندل هم‌زمان سقف و کف، نوع مخالف واکنش قبلی انتخاب می‌شود. '
@@ -136,7 +143,7 @@ def render_chart(candles, zones, origin, move, break_index, first, last, invalid
             '× قرمز: واکنشی که پس از شکست زون مبدأ نامعتبر شده است.</p>'
             '<p>الگوها با قاعده فعلی و واکنش قبلی موجود در checkpoint محاسبه می‌شوند؛ '
             'مربع‌های سیاه، تاریخچه ثبت‌شده همان اجرا هستند. وجود الگوی سه کندلی به‌تنهایی به معنی واکنش پذیرفته‌شده به زون نیست. '
-            'فقط زون مبدأ و زون شکسته‌شده نمایش داده می‌شوند؛ تماس با سایر زون‌ها نیاز به بررسی جداگانه دارد. '
+            'فقط دو زون انتخاب‌شده نمایش داده می‌شوند؛ تماس با سایر زون‌ها نیاز به بررسی جداگانه دارد. '
             'برای دیدن اطلاعات کندل، نشانگر را روی آن نگه دارید.</p>'
             '<div class="chart" dir="ltr">' + ''.join(parts) + '</div>'
             '<h3>جزئیات کندل‌ها و الگوهای تشخیص‌داده‌شده</h3><div style="overflow:auto" dir="ltr"><table>'
@@ -175,11 +182,18 @@ def main():
     parser.add_argument("--broken-zone-id", type=int,
                         help="Show a broken zone different from the movement origin")
     parser.add_argument("--padding", type=int, default=8)
+    parser.add_argument("--inspect-range", type=int, nargs=2, metavar=("FIRST", "LAST"),
+                        help="Inspect candles without selecting a break event")
+    parser.add_argument("--reference-zone-id", type=int)
     parser.add_argument("--database", default="market_data")
     parser.add_argument("--output", default="replay-zone19-chart.html")
     args = parser.parse_args()
     if args.padding < 0:
         parser.error("--padding must be nonnegative")
+    if args.reference_zone_id is not None and args.inspect_range is None:
+        parser.error("reference-zone-id requires inspect-range")
+    if args.inspect_range and not 0 <= args.inspect_range[0] <= args.inspect_range[1] <= args.checkpoint_index:
+        parser.error("inspect-range must be ordered and within checkpoint")
     from zone_energy.data import EngineResultsRepository, MarketDataRepository
     uri = os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/")
     market = MarketDataRepository(uri, args.database)
@@ -199,7 +213,8 @@ def main():
         if len(matches) != 1:
             raise ValueError("Interaction not uniquely found")
         origin, move = matches[0]
-        broken_id = args.broken_zone_id if args.broken_zone_id is not None else origin.id
+        selected_zone_id = args.reference_zone_id if args.inspect_range else args.broken_zone_id
+        broken_id = selected_zone_id if selected_zone_id is not None else origin.id
         target = next((zone for zone in zones if zone.id == broken_id), None)
         if target is None:
             raise ValueError("Broken zone not found in checkpoint")
@@ -207,19 +222,31 @@ def main():
         bars = market.get_candles(args.timeframe, context["start"], context["end"])
         if len(bars) <= args.checkpoint_index or bars[args.checkpoint_index].datetime != context["candle_datetime"]:
             raise ValueError("Candle indexing no longer matches checkpoint")
-        events = selected_break_events(context, move, broken_id, args.break_index)
-        if len(events) != 1 or bars[args.break_index].close != events[0]["close"]:
-            raise ValueError("Selected zone break does not match the checkpoint/candles")
-        first = max(0, move.start_index - args.padding)
-        last = min(args.checkpoint_index, args.break_index + args.padding)
-        html = render_chart(bars, zones, origin, move, args.break_index, first, last,
+        if args.inspect_range:
+            first, last = args.inspect_range
+            break_index = None
+        else:
+            events = selected_break_events(context, move, broken_id, args.break_index)
+            if len(events) != 1 or bars[args.break_index].close != events[0]["close"]:
+                raise ValueError("Selected zone break does not match the checkpoint/candles")
+            first = max(0, move.start_index - args.padding)
+            last = min(args.checkpoint_index, args.break_index + args.padding)
+            break_index = args.break_index
+        html = render_chart(bars, zones, origin, move, break_index, first, last,
                             context.get("invalidated_reactions", []),
-                            broken_zone=target if args.broken_zone_id is not None else None,
+                            broken_zone=target if selected_zone_id is not None else None,
                             reaction_confirmations=context.get("reaction_confirmations"),
                             rejected_reactions=context.get("rejected_reactions", []))
         output = Path(args.output).resolve()
         output.write_text(html, encoding="utf-8")
-        print(f"Origin zone: {origin.id}; broken zone: {broken_id}; interaction: {move.id}; start: {move.start_index}; break: {args.break_index}")
+        print(f"Origin zone: {origin.id}; displayed zone: {broken_id}; interaction: {move.id}; start: {move.start_index}; break: {break_index}")
+        if args.inspect_range:
+            print("Displayed zone history: " + json.dumps([
+                {"id":item.id,"creation_index":item.creation_index,"creation_extreme":item.creation_extreme,
+                 "interactions":[{"id":entry.id,"start_index":entry.start_index,
+                    "start_price":entry.start_price,"end_index":entry.end_index}
+                    for entry in item.interactions if first <= entry.start_index <= last]}
+                for item in (origin, target)],default=str))
         print(f"Chart candles: {first}–{last}")
         print(f"Chart: {output}")
     finally:
