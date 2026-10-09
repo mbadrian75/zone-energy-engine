@@ -21,6 +21,16 @@ def make_zone(zone_id, kind, price, index):
                 created_at_index=index + 1)
 
 
+def incoming(source, price, index, start_price=None, start_index=None, identifier=900):
+    start_price = source.creation_extreme if start_price is None else start_price
+    start_index = source.creation_index if start_index is None else start_index
+    move = Interaction(identifier, source.id, InteractionState.CLOSED, start_price, start_index,
+        end_price=price, end_index=index, distance=abs(price-start_price),
+        movement_time=index-start_index)
+    source.interactions.append(move)
+    return move
+
+
 def return_case():
     origin = make_zone(1, ZoneType.SUPPORT, 100, 10)
     old = Interaction(1, 1, InteractionState.CLOSED, 100, 10,
@@ -28,6 +38,7 @@ def return_case():
     origin.interactions.append(old)
     origin.last_interaction_origin_index = 10
     opposite = make_zone(2, ZoneType.RESISTANCE, 130, 20)
+    incoming(opposite, 100, 30)
     c1 = Candle(datetime(2025, 1, 1, 10), 110, 115, 105, 108, 0)
     c2 = Candle(datetime(2025, 1, 1, 11), 108, 112, 100, 101, 0)
     c3 = Candle(datetime(2025, 1, 1, 12), 101, 114, 101, 110, 0)
@@ -36,6 +47,30 @@ def return_case():
 
 
 class ReturnMoveReferenceTests(unittest.TestCase):
+    def test_actual_986_uses_latest_return_on_old_opposite_zone(self):
+        origin = make_zone(304, ZoneType.SUPPORT, 3387.798, 2733)
+        stale = make_zone(333, ZoneType.RESISTANCE, 3379.798, 3523)
+        source = make_zone(263, ZoneType.RESISTANCE, 3300, 2600)
+        reference = incoming(source, 3380.035, 3565, 3403.925, 3561, 985)
+        current = Interaction(986, 304, InteractionState.OPEN, 3380.035, 3565)
+        self.assertIs(PreviousMoveResolver.resolve(current, origin, [origin, stale, source]), reference)
+        self.assertAlmostEqual(current.previous_distance, 23.890)
+        self.assertEqual(current.previous_movement_time, 4)
+        from zone_energy.engine.movement_energy_calculator import MovementEnergyCalculator
+        current.state = InteractionState.CLOSED
+        current.distance, current.movement_time = 21.494, 1
+        MovementEnergyCalculator.apply(current)
+        self.assertAlmostEqual(current.movement_energy, 3.59882796149016)
+        source.type = ZoneType.SUPPORT
+        self.assertIs(PreviousMoveResolver.resolve(current, origin, [origin, source]), reference)
+
+    def test_zone_creation_without_valid_incoming_reaction_is_not_reference(self):
+        origin = make_zone(304, ZoneType.SUPPORT, 3387.798, 2733)
+        stale = make_zone(333, ZoneType.RESISTANCE, 3379.798, 3523)
+        current = Interaction(986, 304, InteractionState.OPEN, 3380.035, 3565)
+        self.assertIsNone(PreviousMoveResolver.resolve(current, origin, [origin, stale]))
+        self.assertIsNone(current.previous_distance)
+
     def test_return_reference_in_both_directions(self):
         for kind, source_kind, source_price, target_price in (
             (ZoneType.SUPPORT, ZoneType.RESISTANCE, 130, 100),
@@ -43,16 +78,19 @@ class ReturnMoveReferenceTests(unittest.TestCase):
         ):
             origin = make_zone(1, kind, target_price, 10)
             source = make_zone(2, source_kind, source_price, 20)
+            reference = incoming(source, target_price, 30)
             current = Interaction(3, 1, InteractionState.OPEN, target_price, 30)
-            self.assertIs(PreviousMoveResolver.resolve(current, origin, [origin, source]), source)
+            self.assertIs(PreviousMoveResolver.resolve(current, origin, [origin, source]), source.interactions[0])
             self.assertEqual((current.previous_distance, current.previous_movement_time), (30, 10))
 
     def test_latest_opposite_zone_and_new_reaction_extreme(self):
         origin, source, *_ = return_case()
         older = make_zone(3, ZoneType.RESISTANCE, 140, 15)
         same_type = make_zone(4, ZoneType.SUPPORT, 95, 25)
+        source.interactions.clear()
+        incoming(source, 102, 30)
         current = Interaction(5, 1, InteractionState.OPEN, 102, 30)
-        self.assertIs(PreviousMoveResolver.resolve(current, origin, [older, same_type, source]), source)
+        self.assertIs(PreviousMoveResolver.resolve(current, origin, [older, same_type, source]), source.interactions[0])
         self.assertEqual((current.previous_distance, current.previous_movement_time), (28, 10))
 
     def test_future_and_late_confirmed_zones_do_not_replace_reference(self):
@@ -61,7 +99,7 @@ class ReturnMoveReferenceTests(unittest.TestCase):
         late = make_zone(4, ZoneType.RESISTANCE, 140, 29)
         late.created_at_index = 32
         current = Interaction(5, 1, InteractionState.OPEN, 100, 30)
-        self.assertIs(PreviousMoveResolver.resolve(current, origin, [source, future, late]), source)
+        self.assertIs(PreviousMoveResolver.resolve(current, origin, [source, future, late]), source.interactions[0])
 
     def test_broken_source_remains_historical_reference(self):
         origin, source, *_ = return_case()
@@ -129,7 +167,7 @@ class ReturnMoveReferenceTests(unittest.TestCase):
 
     def test_invalid_reference_does_not_append_reaction(self):
         origin, source, reversal, c1, c2, c3 = return_case()
-        source.creation_extreme = 100
+        source.interactions[0].distance = 0
         before = deepcopy(origin)
         with self.assertRaises(ValueError):
             ReturnReversalProcessor.process_with_reference(origin, reversal, c1, c2, c3, 3, 31, [origin, source])

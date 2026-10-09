@@ -11,8 +11,8 @@ class PreviousMoveResolver:
     Endpoints follow InteractionCloser: the destination zone's
     creation_extreme and creation_index. The caller supplies zone history,
     including broken zones, so historical references remain available.
-    Return reactions measure from the last opposite zone's creation extreme
-    to the new reaction extreme, rather than reusing the initial arrival.
+    Return reactions use the retained incoming move from the last valid
+    opposite reaction to the new reaction extreme, including old-zone returns.
     Energy calculation is handled separately.
     """
 
