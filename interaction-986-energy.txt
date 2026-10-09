@@ -1,0 +1,24 @@
+Checkpoint reconstruction: MATCH
+Read-only reconstruction through index: 3570
+{
+  "zone_id": 304,
+  "zone_type_at_inspection": "support",
+  "interaction": {
+    "id": 986,
+    "zone_id": 304,
+    "state": "closed",
+    "start_price": 3380.035,
+    "start_index": 3565,
+    "end_price": 3401.529,
+    "end_index": 3566,
+    "distance": 21.494000000000142,
+    "movement_time": 1,
+    "previous_distance": 0.23700000000008004,
+    "previous_movement_time": 42,
+    "breaks": [],
+    "movement_energy": 3809.0632911379794,
+    "total_break_evidence": 0.0,
+    "base_energy": 3809.0632911379794
+  },
+  "broken_zone_histories": []
+}
