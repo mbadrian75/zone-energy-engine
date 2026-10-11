@@ -152,18 +152,64 @@ class EventTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.repo.append_points([point()])
 
-    def test_static_change_and_disappearing_zone_rejected(self):
+    def test_identity_revision_and_removal_preserve_prior_decisions(self):
         for mutation in ("static", "disappear"):
             r = MongoEventRepository(client=self.client)
             self.begin(r, mutation)
-            r.observe("H1", point().at, point().zones["H1"])
+            first = point()
+            r.observe("H1", first.at, first.zones["H1"])
+            r.append_points([first])
             p = point(2)
             if mutation == "static":
                 p.zones["H1"]["zones"][0]["lower_price"] = 99
             else:
                 p.zones["H1"]["zones"] = []
+            r.observe("H1", p.at, p.zones["H1"])
+            r.append_points([p])
+            r.finish_run()
+            reader = MongoEventReader(r, mutation)
+            self.assertEqual(reader.reconstruct(first.at, from_events=True)["timeframes"], first.zones)
+            self.assertEqual(reader.reconstruct(p.at, from_events=True)["timeframes"], p.zones)
+            self.assertEqual(r.revision_count if mutation == "static" else r.removal_count, 1)
+
+    def test_removed_id_can_reappear_with_new_identity_then_be_revised(self):
+        a, b, c, d = point(1), point(2), point(3), point(4, 7)
+        b.zones["H1"]["zones"] = []
+        c.zones["H1"]["zones"][0].update(lower_price=98.0, upper_price=101.0,
+            creation_index=2, created_at_index=2)
+        d.zones["H1"]["zones"][0].update(lower_price=97.0, upper_price=101.0,
+            creation_index=2, created_at_index=2)
+        ps = [a, b, c, d]
+        self.repo.append_points(self.points(ps), batch_size=2)
+        self.repo.finish_run()
+        self.assertEqual([e["kind"] for e in self.repo.events.docs.values()],
+                         ["created", "removed", "created", "revised"])
+        for p in ps:
+            self.assertEqual(self.reader().reconstruct(p.at, from_events=True)["timeframes"], p.zones)
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            reference = Path(directory) / "membership.jsonl"
+            reference.write_text("".join(json.dumps(dict(symbol="XAUUSD", decision_at=p.at.isoformat(),
+                last_closed_at={tf: t.isoformat() if t else None for tf, t in p.last_closed_at.items()},
+                timeframes=p.zones)) + "\n" for p in ps), encoding="utf-8")
+            report = validate(self.repo, "sample", reference)
+            self.assertEqual((report["zone_removals"], report["zone_revisions"]), (1, 1))
+            removed = next(e for e in self.repo.events.docs.values() if e["kind"] == "removed")
+            removed["before"]["lower_price"] = 99
             with self.assertRaises(ValueError):
-                r.observe("H1", p.at, p.zones["H1"])
+                validate(self.repo, "sample", reference)
+
+    def test_schema_two_history_remains_readable_and_cannot_gate_new_runs(self):
+        self.repo.append_points(self.points([point()]))
+        self.repo.finish_run()
+        # Simulate a retained schema-2 run with the same supported event shape.
+        for collection in (self.repo.runs, self.repo.events, self.repo.snapshots):
+            for doc in collection.docs.values():
+                doc["schema_version"] = 2
+        reader = MongoEventReader(self.repo, "sample", schema_version=2)
+        self.assertEqual(reader.reconstruct(point().at, from_events=True)["timeframes"], point().zones)
+        with self.assertRaises(RuntimeError):
+            require_validated_smoke(self.repo, "sample", {"H1": 5933, "H4": 1601, "D1": 313})
 
     def test_future_events_do_not_change_prefix(self):
         self.repo.append_points(self.points([point(1), point(2, 5)]), batch_size=1)
@@ -207,7 +253,7 @@ class EventTests(unittest.TestCase):
         self.assertEqual(report["zones"], 116)
         self.assertLess(report["compressed_bytes"], report["raw_bytes"])
         self.assertEqual(require_validated_smoke(self.repo, "sample", {"H1": 5933, "H4": 1601, "D1": 313}), report)
-        print("January schema-2 equivalence:", json.dumps(report, sort_keys=True))
+        print("January event-storage equivalence:", json.dumps(report, sort_keys=True))
 
     def test_closed_bar_observer_records_gap_changes_and_excludes_tail(self):
         class Engine:

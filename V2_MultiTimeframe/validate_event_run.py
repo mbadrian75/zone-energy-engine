@@ -1,11 +1,11 @@
-"""Read-only validation gate for completed schema-2 runs; nonzero on mismatch."""
+"""Read-only validation gate for schema-3 runs, with schema-2 read support."""
 import argparse
 from datetime import datetime
 import json
 import os
 from pathlib import Path
 
-from mongo_event_repository import MongoEventRepository, MongoEventReader, TIMEFRAMES, unpack, code_fingerprint, apply_event
+from mongo_event_repository import MongoEventRepository, MongoEventReader, TIMEFRAMES, unpack, code_fingerprint, apply_event, SCHEMA_VERSION
 
 
 def require_validated_smoke(repository, run_id, year_counts):
@@ -22,8 +22,8 @@ def require_validated_smoke(repository, run_id, year_counts):
     return report
 
 
-def validate(repository, run_id, reference_path):
-    reader = MongoEventReader(repository, run_id)
+def validate(repository, run_id, reference_path, *, schema_version=SCHEMA_VERSION):
+    reader = MongoEventReader(repository, run_id, schema_version=schema_version)
     run = reader._completed()
     scope = reader.scope
     events = iter(repository.events.find(scope).sort("seq", 1))
@@ -35,9 +35,10 @@ def validate(repository, run_id, reference_path):
     priority = {"D1": 0, "H4": 1, "H1": 2}
     compressed_bytes = raw_bytes = 0
     rejection_count = 0
+    removal_count = revision_count = 0
 
     def consume_event(e):
-        nonlocal seq, last_event_order, rejection_count
+        nonlocal seq, last_event_order, rejection_count, removal_count, revision_count
         order = (e["observed_at"], priority[e["timeframe"]])
         if e["seq"] != seq + 1 or (last_event_order is not None and order < last_event_order):
             raise ValueError("Event sequence/order mismatch")
@@ -48,6 +49,10 @@ def validate(repository, run_id, reference_path):
         apply_event(rows, e)
         if e["kind"] == "reaction_rejected":
             rejection_count += 1
+        if e["kind"] == "removed":
+            removal_count += 1
+        if e["kind"] == "revised":
+            revision_count += 1
 
     with Path(reference_path).open(encoding="utf-8") as reference:
         for snapshot in repository.snapshots.find(scope).sort("decision_seq", 1):
@@ -90,6 +95,8 @@ def validate(repository, run_id, reference_path):
         raise ValueError("Run totals mismatch")
     if rejection_count != run.get("total_rejection_count", 0):
         raise ValueError("Rejection audit count mismatch")
+    if removal_count != run.get("total_removal_count", 0) or revision_count != run.get("total_revision_count", 0):
+        raise ValueError("Zone membership/revision totals mismatch")
     if not count or last_at != run["last_decision_at"]:
         raise ValueError("Invalid completion marker")
     last = repository.snapshots.find_one({**scope, "decision_seq": count})
@@ -98,6 +105,8 @@ def validate(repository, run_id, reference_path):
     return {"run_id": run_id, "decisions": count, "events": seq,
             "zones": sum(len(z) for z in rows.values()), "all_decisions_match": True,
             "zero_distance_rejections": rejection_count,
+            "zone_removals": removal_count, "zone_revisions": revision_count,
+            "schema_version": schema_version,
             "all_event_states_match": True, "raw_bytes": raw_bytes,
             "compressed_bytes": compressed_bytes}
 
@@ -107,11 +116,12 @@ def main():
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--reference", type=Path, required=True)
     parser.add_argument("--database", default="market_data")
+    parser.add_argument("--schema-version", type=int, choices=(2, 3), default=SCHEMA_VERSION)
     args = parser.parse_args()
     repo = MongoEventRepository(mongo_uri=os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/"),
                                 database=args.database)
     try:
-        print(json.dumps(validate(repo, args.run_id, args.reference), indent=2))
+        print(json.dumps(validate(repo, args.run_id, args.reference, schema_version=args.schema_version), indent=2))
     finally:
         repo.close()
 
