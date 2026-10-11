@@ -16,6 +16,28 @@ def has_scoped_unique_index(indexes):
 @unittest.skipUnless(os.environ.get("ZONE_ENERGY_LIVE_MONGO_TEST") == "1",
                      "Set ZONE_ENERGY_LIVE_MONGO_TEST=1 for real MongoDB contract test")
 class LiveMongoTests(unittest.TestCase):
+    def test_zero_width_boundary_audit_roundtrip(self):
+        from test_zero_width_policy import START, COUNTS, audited_replay
+        from datetime import timedelta
+        repo = MongoEventRepository(mongo_uri=os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/"),
+                                   database=os.environ.get("ZONE_ENERGY_TEST_DATABASE", "market_data"))
+        run_id = "live-zero-width-" + uuid4().hex
+        try:
+            repo.begin_run(run_id=run_id, start=START, end=START + timedelta(days=1), year_candles=COUNTS)
+            bars = audited_replay(repo)
+            reader = MongoEventReader(repo, run_id)
+            for bar in bars:
+                self.assertEqual(reader.reconstruct(bar.closed_at), reader.reconstruct(bar.closed_at, from_events=True))
+            audit = repo.events.find_one({"run_id": run_id, "kind": "boundary_rejected"})
+            self.assertEqual(audit["reaction"]["lower_price"], 1640.1)
+            self.assertEqual(repo.runs.find_one({"run_id": run_id})["total_boundary_rejection_count"], 1)
+            print("Retained zero-width boundary run:", run_id)
+        except BaseException as exc:
+            repo.fail_run(exc)
+            raise
+        finally:
+            repo.close()
+
     def test_zone_removal_reappearance_and_revision_keep_earlier_state(self):
         repo = MongoEventRepository(mongo_uri=os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/"),
                                    database=os.environ.get("ZONE_ENERGY_TEST_DATABASE", "market_data"))

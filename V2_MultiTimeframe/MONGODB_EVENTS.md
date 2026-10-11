@@ -192,3 +192,24 @@ if ($LASTEXITCODE -ne 0) { throw 'validation failed; do not start long replay' }
 After checking coverage, add `--validated-smoke-run-id '<VALIDATED_SMOKE_RUN_ID>'`
 to the long replay command, with `--storage mongodb-events`, a new run ID and
 the same yearly candle configuration. No long-history start/end dates are assumed.
+# Zero-width boundary policy (V2)
+
+The approved `reject-zero-width-boundary-v1` policy rejects a new zone candidate
+when the selected boundary has identical finite lower and upper prices. The
+oldest matching M15 candle is still selected using the original V1 rule; V2 does
+not search for an alternative candle, widen prices, change market data, or
+consume a zone/interaction ID. All remaining candle processing still runs.
+Other validation errors propagate.
+
+Successful staged rejections are retained in the engine's rejection history.
+The observer records an immutable `boundary_rejected` event at the time the
+rejection becomes known, with `zone_id: null` because no zone was created.
+The audit includes the equal prices, reaction/detection indexes, C2 origin time,
+and rejection time. Historical rejections introduced by origin-invalidation
+replay are reported at the current observation; existing audits are not repeated.
+Failed engine commits do not leak audits. Event readers validate the audit and
+leave zone state unchanged. Run metadata includes `boundary_policy` and
+`total_boundary_rejection_count`; validation reports
+`zero_width_boundary_rejections`. This is an additive schema-3 event extension;
+old records are not rewritten. The source fingerprint requires a fresh January
+smoke before a long replay with this policy.

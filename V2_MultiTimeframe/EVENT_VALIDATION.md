@@ -94,3 +94,15 @@ $env:PYTHONPATH = 'V2_MultiTimeframe;V1/src'
 ```
 
 See [MONGODB_EVENTS.md](MONGODB_EVENTS.md) for the real server smoke procedure.
+# Zero-width boundary regression
+
+Server evidence: M15 at 2012-04-06 11:45 UTC had open/high/low/close=1640.1
+and volume=0; the long run failed constructing zone 915 with identical bounds.
+The user approved rejecting the candidate in V2 while preserving market data
+and V1. A focused regression uses that exact M15 candle with synthetic H1
+confirmation bars: original V1 raises on zero-width zone 915, V2 records a
+rejection and advances. This reproduces the invariant failure, not the complete
+server history. Tests also cover positive-boundary V1 equivalence, preserving
+the open interaction, failed commit isolation, historical audit reporting,
+Mongo event reconstruction and corrupt audits. A live Mongo test is opt-in.
+Full 2010–2026 replay completion is still unverified.
