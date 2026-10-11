@@ -1,5 +1,19 @@
 # Validation record — 2026-10-11
 
+Server output subsequently supplied by the user reports all 35 tests passed,
+including the real MongoDB contract, followed by the actual January replay:
+run `v2-events-jan2025-4283f0662f1e462796ff3a76585db22e`, 504 decisions,
+19,868 events, 116 zones, both equivalence flags true. Compressed payload on
+that server: 1,067,412 bytes. These figures are from the supplied server log.
+
+The requested 2010–2026 replay then aborted inside unchanged V1
+InteractionCloser with zero movement distance. January equivalence does not
+establish validity of every V1 path on sixteen years of data. Added a read-only
+diagnostic replay under diagnostics/ to capture the failing timeframe/candle,
+actual closing endpoint and interaction without changing V1 or MongoDB data.
+Its synthetic zero-distance extraction test passes. No skip or recovery policy
+for the engine error is introduced.
+
 Base repository commit: `bba0bd6` (origin/main at implementation start).
 
 - Baseline V2 suite: 17 tests passed before changes.
