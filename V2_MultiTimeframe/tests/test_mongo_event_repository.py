@@ -60,6 +60,13 @@ def client():
 
 
 class EventTests(unittest.TestCase):
+    def test_index_metadata_accepts_pymongo_key_lists_and_mappings(self):
+        from test_event_live_mongo import has_scoped_unique_index
+        for keys in ([('schema_version', 1), ('run_id', 1)],
+                     {'schema_version': 1, 'run_id': 1}):
+            self.assertTrue(has_scoped_unique_index({'scoped': {'unique': True, 'key': keys}}))
+            self.assertFalse(has_scoped_unique_index({'scoped': {'key': keys}}))
+
     def test_mongo_client_uses_journal_option(self):
         def constructor(uri, **options):
             self.assertEqual(options["journal"], True)

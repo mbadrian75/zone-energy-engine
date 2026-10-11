@@ -3,7 +3,11 @@
 Base repository commit: `bba0bd6` (origin/main at implementation start).
 
 - Baseline V2 suite: 17 tests passed before changes.
-- Updated V2 suite: 34 tests discovered; 33 passed, 1 live MongoDB test skipped.
+- Updated V2 suite: 35 tests discovered; 34 passed, 1 live MongoDB test skipped.
+- The second server attempt passed live persistence, reconstruction and duplicate
+  checks, then exposed a test-only index metadata shape error. Index keys now
+  accept PyMongo's list of pairs as well as mapping form, with regression coverage.
+  The full server smoke must still be rerun through January replay/validation.
 - Windows Server output exposed a MongoClient constructor option error before
   any database operation: `j=True` is not accepted. The client now uses
   `journal=True`; collection WriteConcern correctly retains `j=True`. A

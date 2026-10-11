@@ -8,6 +8,11 @@ from mongo_event_repository import MongoEventRepository, MongoEventReader
 from test_mongo_result_repository import point
 
 
+def has_scoped_unique_index(indexes):
+    return any(i.get("unique") and dict(i["key"]).get("schema_version") == 1
+               for i in indexes.values())
+
+
 @unittest.skipUnless(os.environ.get("ZONE_ENERGY_LIVE_MONGO_TEST") == "1",
                      "Set ZONE_ENERGY_LIVE_MONGO_TEST=1 for real MongoDB contract test")
 class LiveMongoTests(unittest.TestCase):
@@ -42,8 +47,7 @@ class LiveMongoTests(unittest.TestCase):
             with self.assertRaises(DuplicateKeyError):
                 repo.snapshots.insert_one(snapshot)
             for collection in (repo.events, repo.snapshots, repo.runs):
-                self.assertTrue(any(i.get("unique") and ("schema_version", 1) in i["key"].items()
-                                    for i in collection.index_information().values()))
+                self.assertTrue(has_scoped_unique_index(collection.index_information()))
             print("Retained MongoDB contract run:", run_id)
         except BaseException as exc:
             repo.fail_run(exc)
