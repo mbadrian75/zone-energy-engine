@@ -7,6 +7,8 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $files = @(
+    'market_streams.py',
+    'tests/test_paged_market.py',
     'zero_distance_policy.py',
     'v1_adapter.py',
     'mongo_event_repository.py',
