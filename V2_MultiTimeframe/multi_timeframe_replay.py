@@ -8,6 +8,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
+from math import isfinite
 from heapq import heappop, heappush
 from typing import Any, Iterable, Iterator, Mapping, Protocol
 
@@ -24,12 +25,17 @@ class ClosedBar:
     high: float
     low: float
     close: float
+    volume: float = 0.0
 
     def __post_init__(self) -> None:
         if self.timeframe not in TIMEFRAMES:
             raise ValueError(f"Unsupported timeframe: {self.timeframe}")
         if self.closed_at.tzinfo is None or self.closed_at.utcoffset() is None:
             raise ValueError("closed_at must be timezone-aware")
+        if not all(isfinite(x) for x in (self.open, self.high, self.low, self.close, self.volume)):
+            raise ValueError("OHLCV must be finite")
+        if self.volume < 0:
+            raise ValueError("Volume cannot be negative")
         if self.low > min(self.open, self.close) or self.high < max(self.open, self.close):
             raise ValueError("Invalid OHLC")
 
