@@ -35,10 +35,12 @@ def validate(repository, run_id, reference_path, *, schema_version=SCHEMA_VERSIO
     priority = {"D1": 0, "H4": 1, "H1": 2}
     compressed_bytes = raw_bytes = 0
     rejection_count = 0
+    boundary_rejection_count = 0
     removal_count = revision_count = 0
 
     def consume_event(e):
         nonlocal seq, last_event_order, rejection_count, removal_count, revision_count
+        nonlocal boundary_rejection_count
         order = (e["observed_at"], priority[e["timeframe"]])
         if e["seq"] != seq + 1 or (last_event_order is not None and order < last_event_order):
             raise ValueError("Event sequence/order mismatch")
@@ -49,6 +51,8 @@ def validate(repository, run_id, reference_path, *, schema_version=SCHEMA_VERSIO
         apply_event(rows, e)
         if e["kind"] == "reaction_rejected":
             rejection_count += 1
+        if e["kind"] == "boundary_rejected":
+            boundary_rejection_count += 1
         if e["kind"] == "removed":
             removal_count += 1
         if e["kind"] == "revised":
@@ -95,6 +99,8 @@ def validate(repository, run_id, reference_path, *, schema_version=SCHEMA_VERSIO
         raise ValueError("Run totals mismatch")
     if rejection_count != run.get("total_rejection_count", 0):
         raise ValueError("Rejection audit count mismatch")
+    if boundary_rejection_count != run.get("total_boundary_rejection_count", 0):
+        raise ValueError("Boundary rejection audit count mismatch")
     if removal_count != run.get("total_removal_count", 0) or revision_count != run.get("total_revision_count", 0):
         raise ValueError("Zone membership/revision totals mismatch")
     if not count or last_at != run["last_decision_at"]:
@@ -105,6 +111,7 @@ def validate(repository, run_id, reference_path, *, schema_version=SCHEMA_VERSIO
     return {"run_id": run_id, "decisions": count, "events": seq,
             "zones": sum(len(z) for z in rows.values()), "all_decisions_match": True,
             "zero_distance_rejections": rejection_count,
+            "zero_width_boundary_rejections": boundary_rejection_count,
             "zone_removals": removal_count, "zone_revisions": revision_count,
             "schema_version": schema_version,
             "all_event_states_match": True, "raw_bytes": raw_bytes,

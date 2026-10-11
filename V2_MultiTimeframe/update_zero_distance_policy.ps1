@@ -16,6 +16,7 @@ $files = @(
     'validate_event_run.py',
     'smoke_event_mongo.ps1',
     'tests/test_zero_distance_policy.py',
+    'tests/test_zero_width_policy.py',
     'tests/test_mongo_event_repository.py',
     'tests/test_event_live_mongo.py',
     'tests/test_replay_failure_diagnostics.py',

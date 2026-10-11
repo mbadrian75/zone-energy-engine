@@ -62,6 +62,23 @@ def unpack(doc):
 
 
 def apply_event(rows, event):
+    if event["kind"] == "boundary_rejected":
+        audit = event["reaction"]
+        encode(audit)
+        if (audit["policy_version"] != "reject-zero-width-boundary-v1"
+                or audit["reason"] != "zero_width_boundary"
+                or type(audit["lower_price"]) not in (int, float)
+                or audit["lower_price"] != audit["upper_price"]
+                or audit["reaction_type"] not in ("support", "resistance")
+                or not 0 <= audit["reaction_index"] < audit["detection_index"]
+                or not audit["detection_index"] == audit["rejected_at"] <= event["candle_index"]
+                or event["timeframe"] not in TIMEFRAMES or event["zone_id"] is not None):
+            raise ValueError("Invalid zero-width boundary rejection audit")
+        origin = datetime.fromisoformat(audit["origin_datetime"])
+        rejected = datetime.fromisoformat(audit["rejected_datetime"])
+        if origin.tzinfo is not None or rejected.tzinfo is not None or not origin < rejected <= event["observed_at"]:
+            raise ValueError("Invalid boundary rejection timestamps")
+        return
     if event["kind"] == "reaction_rejected":
         reaction = event["reaction"]
         if (reaction["policy_version"] != "reject-zero-distance-v1"
@@ -141,6 +158,7 @@ class MongoEventRepository:
         self.pending_snapshots = []
         self.seq = self.count = 0
         self.rejection_count = 0
+        self.boundary_rejection_count = 0
         self.removal_count = self.revision_count = 0
         self.last_observation = self.last_decision = None
         self.observed_at = {tf: None for tf in TIMEFRAMES}
@@ -185,6 +203,7 @@ class MongoEventRepository:
                "end": self.end, "year_candles": deepcopy(year_candles),
                "code_fingerprint": code_fingerprint(),
                "reaction_policy": "reject-zero-distance-v1",
+               "boundary_policy": "reject-zero-width-boundary-v1",
                "zone_history_model": "observed-membership-and-revisions-v1",
                "decision_count": 0, "committed_event_seq": 0,
                "started_at": datetime.now(timezone.utc).replace(tzinfo=None)}
@@ -229,10 +248,12 @@ class MongoEventRepository:
         new = {}
         events = []
         for reaction in rejections:
+            boundary_rejection = reaction.get("policy_version") == "reject-zero-width-boundary-v1"
             event = self._doc(self.seq + len(events) + 1,
                 seq=self.seq + len(events) + 1, timeframe=timeframe,
-                zone_id=f"{timeframe}:{reaction['zone_id']}", observed_at=stamp,
-                candle_index=index, kind="reaction_rejected", reaction=deepcopy(reaction))
+                zone_id=None if boundary_rejection else f"{timeframe}:{reaction['zone_id']}", observed_at=stamp,
+                candle_index=index, kind="boundary_rejected" if boundary_rejection else "reaction_rejected",
+                reaction=deepcopy(reaction))
             apply_event({}, event)  # Validate audit before any insert.
             events.append(event)
         for zone in state["zones"]:
@@ -280,6 +301,7 @@ class MongoEventRepository:
                     reason="absent_from_engine_state"))
         self.seq += len(events)
         self.rejection_count += sum(e["kind"] == "reaction_rejected" for e in events)
+        self.boundary_rejection_count += sum(e["kind"] == "boundary_rejected" for e in events)
         self.removal_count += sum(e["kind"] == "removed" for e in events)
         self.revision_count += sum(e["kind"] == "revised" for e in events)
         self.states[timeframe] = deepcopy(state)
@@ -351,6 +373,7 @@ class MongoEventRepository:
             result = self.runs.update_one({"_id": self.run_id, "status": "running", **self._scope()},
                 {"$set": {"status": "completed", "total_event_count": self.seq,
                           "total_rejection_count": self.rejection_count,
+                          "total_boundary_rejection_count": self.boundary_rejection_count,
                           "total_removal_count": self.removal_count,
                           "total_revision_count": self.revision_count,
                           "finished_at": datetime.now(timezone.utc).replace(tzinfo=None)}})
