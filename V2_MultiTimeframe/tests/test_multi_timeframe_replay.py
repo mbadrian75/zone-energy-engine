@@ -40,6 +40,10 @@ class ReplayTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             list(MultiTimeframeReplay(streams, FakeZoneEngine()).run())
 
+    def test_reject_invalid_volume(self):
+        with self.assertRaises(ValueError):
+            ClosedBar("H1", datetime(2020,1,1,tzinfo=UTC),100,101,99,100,volume=-1)
+
     def test_reject_naive_timestamp(self):
         with self.assertRaises(ValueError):
             ClosedBar('H1', datetime(2020,1,1),100,101,99,100)
