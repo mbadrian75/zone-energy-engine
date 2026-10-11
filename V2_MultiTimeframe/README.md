@@ -4,6 +4,10 @@ The V2 folder does not modify V1. It instantiates one unmodified V1 `ReplayEngin
 
 ## Architecture
 
+Event-based MongoDB storage with compressed H1 checkpoints is available through
+`--storage mongodb-events`. See [MONGODB_EVENTS.md](MONGODB_EVENTS.md) for schema,
+crash semantics, January equivalence, the long-replay gate and Windows smoke commands.
+
 1. `market_streams.py` converts start-stamped V1/Mongo candles into completed bars (UTC assumed). No incomplete bar is supplied to the zone engine.
 2. `multi_timeframe_replay.py` interleaves H1/H4/D1 based on candle close time. D1 and H4 closes at the same instant are processed before the H1 decision.
 3. `v1_adapter.py` runs three independent V1 engines. It reuses V1 zone creation, role changes, breaks, interactions, energy calculation and M15 boundary rules without reimplementing them. Zone IDs are namespaced, e.g. `H1:2` versus `H4:2`.

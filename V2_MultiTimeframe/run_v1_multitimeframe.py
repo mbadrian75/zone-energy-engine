@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 import os
 from pathlib import Path
@@ -18,6 +18,8 @@ from v1_adapter import V1ZoneEngineAdapter, DURATION
 from zone_energy.data import MarketDataRepository
 from zone_energy.engine.zone_boundary_service import ZoneBoundaryService
 from mongo_result_repository import MongoV2ResultRepository
+from mongo_event_repository import MongoEventRepository
+from validate_event_run import require_validated_smoke
 
 
 def utc_date(text: str) -> datetime:
@@ -38,10 +40,13 @@ def main() -> None:
     parser.add_argument("--year-candles-h4", type=int, required=True)
     parser.add_argument("--year-candles-d1", type=int, required=True)
     parser.add_argument("--database", default="market_data")
-    parser.add_argument("--storage", choices=("jsonl", "mongodb"), default="jsonl")
+    parser.add_argument("--storage", choices=("jsonl", "mongodb", "mongodb-events"), default="jsonl")
     parser.add_argument("--output", type=Path, help="Required only for --storage jsonl")
     parser.add_argument("--run-id", help="Unique identifier for --storage mongodb")
     parser.add_argument("--mongo-batch-size", type=int, default=25)
+    parser.add_argument("--event-batch-size", type=int, default=1000)
+    parser.add_argument("--validated-smoke-run-id",
+                        help="Completed January schema-2 smoke required for event replays over 31 days")
     args = parser.parse_args()
     if args.start >= args.end:
         parser.error("--start must be before --end")
@@ -50,10 +55,12 @@ def main() -> None:
         parser.error("All year-candle counts must be positive")
     if args.storage == "jsonl" and args.output is None:
         parser.error("--output is required for JSONL")
-    if args.storage == "mongodb" and args.output is not None:
+    if args.storage != "jsonl" and args.output is not None:
         parser.error("Do not pass --output when storing in MongoDB")
     if args.mongo_batch_size <= 0:
         parser.error("--mongo-batch-size must be positive")
+    if args.event_batch_size <= 0:
+        parser.error("--event-batch-size must be positive")
 
     mongo_uri = os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/")
     market = MarketDataRepository(mongo_uri, args.database)
@@ -75,9 +82,18 @@ def main() -> None:
             lambda tf, config: ZoneBoundaryService(market, config), year_counts
         )
         decisions = MultiTimeframeReplay(streams, adapter).run()
-        if args.storage == "mongodb":
+        if args.storage != "jsonl":
             run_id = args.run_id or "xauusd-v2-" + uuid4().hex
-            results = MongoV2ResultRepository(mongo_uri=mongo_uri, database=args.database)
+            if args.storage == "mongodb-events":
+                results = MongoEventRepository(mongo_uri=mongo_uri, database=args.database,
+                                               event_batch_size=args.event_batch_size)
+                if args.end - args.start > timedelta(days=31):
+                    report = require_validated_smoke(results, args.validated_smoke_run_id, year_counts)
+                    print(f"January equivalence gate passed: {report['decisions']} decisions", flush=True)
+                decisions = MultiTimeframeReplay(streams, adapter,
+                    on_observation=results.observe).run()
+            else:
+                results = MongoV2ResultRepository(mongo_uri=mongo_uri, database=args.database)
             results.begin_run(run_id=run_id, start=args.start, end=args.end,
                               year_candles=year_counts)
             print(f"MongoDB run_id: {run_id}", flush=True)
