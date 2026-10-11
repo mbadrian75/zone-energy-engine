@@ -7,7 +7,7 @@ The V2 folder does not modify V1. It instantiates one unmodified V1 `ReplayEngin
 1. `market_streams.py` converts start-stamped V1/Mongo candles into completed bars (UTC assumed). No incomplete bar is supplied to the zone engine.
 2. `multi_timeframe_replay.py` interleaves H1/H4/D1 based on candle close time. D1 and H4 closes at the same instant are processed before the H1 decision.
 3. `v1_adapter.py` runs three independent V1 engines. It reuses V1 zone creation, role changes, breaks, interactions, energy calculation and M15 boundary rules without reimplementing them. Zone IDs are namespaced, e.g. `H1:2` versus `H4:2`.
-4. `run_v1_multitimeframe.py` reads XAUUSD from V1 MongoDB, producing JSON Lines with one combined snapshot per H1 close.
+4. `run_v1_multitimeframe.py` reads XAUUSD from V1 MongoDB and writes combined decisions to JSONL or dedicated MongoDB collections (`--storage mongodb`).
 
 ## Historical-data contract and caveats
 
@@ -48,3 +48,7 @@ python -B V1/scripts/run_engine_tests.py
 ## Next
 
 Perform a historical 2025 smoke test after the timestamp convention, M15 data coverage and annual-decay calibration have been verified. Compare each timeframe against a matching V1 single-timeframe replay, then conduct causal 2010–2026 data extraction and label building.
+
+## V2 MongoDB persistence
+
+For the new append-only collections, indexing, incomplete runs and Windows PowerShell smoke-test command, see [MONGODB_STORAGE.md](MONGODB_STORAGE.md). Historical data collections and V1 checkpoints are not changed.
