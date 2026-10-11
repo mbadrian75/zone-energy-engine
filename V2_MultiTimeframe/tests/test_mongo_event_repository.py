@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
+import sys
 
 from mongo_event_repository import MongoEventRepository, MongoEventReader, PREFIX
 from multi_timeframe_replay import MultiTimeframeReplay, ClosedBar
@@ -58,6 +60,16 @@ def client():
 
 
 class EventTests(unittest.TestCase):
+    def test_mongo_client_uses_journal_option(self):
+        def constructor(uri, **options):
+            self.assertEqual(options["journal"], True)
+            self.assertNotIn("j", options)
+            self.assertEqual(options["w"], "majority")
+            self.assertEqual(options["wTimeoutMS"], 30000)
+            return client()
+        with patch.dict(sys.modules, {"pymongo": SimpleNamespace(MongoClient=constructor)}):
+            MongoEventRepository()
+
     def setUp(self):
         self.client = client()
         self.repo = MongoEventRepository(client=self.client, event_batch_size=2)

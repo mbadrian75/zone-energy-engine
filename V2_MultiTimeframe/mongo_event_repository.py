@@ -93,7 +93,7 @@ class MongoEventRepository:
         if client is None:
             from pymongo import MongoClient
             client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000,
-                                 w="majority", j=True, wTimeoutMS=30000)
+                                 w="majority", journal=True, wTimeoutMS=30000)
         self.client = client
         db = client[database]
         self.runs, self.events, self.snapshots = (

@@ -3,7 +3,11 @@
 Base repository commit: `bba0bd6` (origin/main at implementation start).
 
 - Baseline V2 suite: 17 tests passed before changes.
-- Final V2 suite: 33 tests discovered; 32 passed, 1 live MongoDB test skipped.
+- Updated V2 suite: 34 tests discovered; 33 passed, 1 live MongoDB test skipped.
+- Windows Server output exposed a MongoClient constructor option error before
+  any database operation: `j=True` is not accepted. The client now uses
+  `journal=True`; collection WriteConcern correctly retains `j=True`. A
+  constructor regression test covers the option names. Server smoke must be rerun.
 - Actual V1 engine integration: observer-enabled output matches the original
   replay output at every synthetic H1 decision.
 - January checked-in JSONL equivalence: all 504 complete decisions and all 116
