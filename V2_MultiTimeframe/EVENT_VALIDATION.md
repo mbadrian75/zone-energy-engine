@@ -1,5 +1,25 @@
 # Validation record — 2026-10-11
 
+After the user approved rejecting zero-distance reactions, V2 now implements
+that policy without modifying V1 files. Local validation: 45 tests discovered,
+43 passed, 2 opt-in live MongoDB tests skipped. The supplied H1/2011-02-10
+scenario (interaction 1800, origin 424, role-change target 386, equal endpoints
+1360.43, four-candle duration) is reproduced with a minimal seeded engine state.
+Unmodified V1 raises; V2 rejects the reaction, keeps the OPEN interaction and
+target role, advances the candle and continues. Nonzero seeded activation equals
+V1 exactly; immediate/delayed/new-zone reactions, temporal errors and immutable
+Mongo rejection audit reconstruction are covered. January's 504 JSONL decisions
+and 116 zones still match in offline equivalence. Fresh actual server smoke is
+required because production source-code fingerprint changed. This is not a
+claim that the full sixteen-year replay completed.
+
+Committed-history comparisons also capture older zero-distance rejections
+introduced by V1 invalidation replay at the current observation timestamp,
+without repeating unchanged rejection history. A failed engine before_commit
+does not leak the staged rejection. The V2 updater downloads all required files
+from a pinned commit before copying any, then runs a fresh January smoke; it
+does not start a long replay or remove database data.
+
 Server output subsequently supplied by the user reports all 35 tests passed,
 including the real MongoDB contract, followed by the actual January replay:
 run `v2-events-jan2025-4283f0662f1e462796ff3a76585db22e`, 504 decisions,

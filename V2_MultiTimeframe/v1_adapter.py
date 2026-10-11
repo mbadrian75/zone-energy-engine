@@ -1,4 +1,4 @@
-"""Connect unchanged V1 engines to V2 causal H1/H4/D1 replay.
+"""Connect V1 engines to V2 causal replay with the approved zero-distance policy.
 
 HistData Mongo candles have START-stamped naive timestamps. This adapter
 receives completed UTC bars and restores their original V1 opening timestamps.
@@ -14,12 +14,13 @@ from zone_energy.engine.effective_zone_energy_calculator import EffectiveZoneEne
 from zone_energy.engine.market_energy_snapshot import MarketEnergySnapshotCalculator
 from zone_energy.models import Candle
 from zone_energy.replay.replay_engine import ReplayEngine
+from zero_distance_policy import V2ReplayEngine
 
 DURATION = {"H1": timedelta(hours=1), "H4": timedelta(hours=4), "D1": timedelta(days=1)}
 
 
 class V1ZoneEngineAdapter:
-    """Three independent V1 engines, with timeframe-scoped IDs and energies.
+    """Three V2 policy engines using V1 logic, scoped IDs and V1 energies.
 
     boundary_service_factory(tf, config) returns a V1-compatible service.
     For real data use ZoneBoundaryService(market_repository, config), which
@@ -42,7 +43,7 @@ class V1ZoneEngineAdapter:
             if type(count) is not int or count <= 0:
                 raise ValueError(f"Invalid year_candles for {timeframe}")
             config = EngineConfig(timeframe=EngineTimeframe(timeframe))
-            self.engines[timeframe] = ReplayEngine(
+            self.engines[timeframe] = V2ReplayEngine(
                 config, count, boundary_service_factory(timeframe, config)
             )
             self.energy[timeframe] = EffectiveZoneEnergyCalculator(config)
@@ -61,6 +62,10 @@ class V1ZoneEngineAdapter:
                         bar.low, bar.close, bar.volume)
         self.engines[timeframe].process(candle)
         self._last_closed[timeframe] = close_utc
+
+    def recent_rejections(self, timeframe):
+        from copy import deepcopy
+        return deepcopy(getattr(self.engines[timeframe], "recent_policy_rejections", []))
 
     def snapshot(self, timeframe: str) -> dict:
         if timeframe not in self.engines:

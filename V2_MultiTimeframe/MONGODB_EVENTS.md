@@ -1,5 +1,31 @@
 # MongoDB Event-Based V2 (schema_version=2)
 
+## Approved zero-distance policy
+
+`zero_distance_policy.py` implements a V2-only ReplayEngine subclass. When a
+confirmed opposite reaction's extreme is exactly equal to the current OPEN
+interaction's start price, and its temporal ordering is valid, reject that
+reaction with reason `zero_distance`. Preserve the OPEN interaction, do not
+finalize/score it, do not change the target's role or activate its interaction,
+and continue processing the same candle's other V1 rules. This does not skip
+candles or suppress other errors. A newly created zone's identity can remain
+known even when its candidate interaction is rejected. Physical breaks remain
+governed by V1. Nonzero prices use the original V1 activation method.
+
+Rejections are retained in engine rejected_reactions and recorded append-only
+in the event collection as kind `reaction_rejected`, with policy version,
+origin/target/interaction IDs, equal endpoints, indexes and observed timestamp.
+Readers replay these as audit records without changing zone state. Validation
+checks their invariants and completed-run `total_rejection_count`. New runs
+declare `reaction_policy=reject-zero-distance-v1`. Use the updated reader and
+validator for runs containing rejection events; the schema remains version 2.
+
+This approved policy changes the source-code fingerprint. The earlier January
+smoke must therefore be replaced by a **fresh successful smoke run** before any
+long replay. Existing runs and V1/market data are left untouched. Event replay
+prints processed H1 progress every 1,000 decisions; these lines are not commit
+markers. `--progress-every` changes that interval.
+
 For V1 replay failures, `diagnostics/diagnose_replay.py` repeats the same causal
 replay in read-only mode and saves a fresh local JSON report with exact traceback
 context. It never writes MongoDB data or changes engine behavior. Its placement

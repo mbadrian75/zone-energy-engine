@@ -32,6 +32,13 @@ def utc_date(text: str) -> datetime:
     return parsed.replace(tzinfo=timezone.utc)
 
 
+def report_progress(points, every):
+    for count, point in enumerate(points, 1):
+        if count % every == 0:
+            print(f"Processed H1 decisions: {count}; last H1: {point.at.isoformat()}", flush=True)
+        yield point
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--start", type=utc_date, required=True)
@@ -45,6 +52,8 @@ def main() -> None:
     parser.add_argument("--run-id", help="Unique identifier for --storage mongodb")
     parser.add_argument("--mongo-batch-size", type=int, default=25)
     parser.add_argument("--event-batch-size", type=int, default=1000)
+    parser.add_argument("--progress-every", type=int, default=1000,
+                        help="Print processed H1 progress in event mode (not a commit marker)")
     parser.add_argument("--validated-smoke-run-id",
                         help="Completed January schema-2 smoke required for event replays over 31 days")
     args = parser.parse_args()
@@ -61,6 +70,8 @@ def main() -> None:
         parser.error("--mongo-batch-size must be positive")
     if args.event_batch_size <= 0:
         parser.error("--event-batch-size must be positive")
+    if args.progress_every <= 0:
+        parser.error("--progress-every must be positive")
 
     mongo_uri = os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/")
     market = MarketDataRepository(mongo_uri, args.database)
@@ -91,7 +102,9 @@ def main() -> None:
                     report = require_validated_smoke(results, args.validated_smoke_run_id, year_counts)
                     print(f"January equivalence gate passed: {report['decisions']} decisions", flush=True)
                 decisions = MultiTimeframeReplay(streams, adapter,
-                    on_observation=results.observe).run()
+                    on_observation=lambda tf, at, state: results.observe(tf, at, state,
+                        rejections=adapter.recent_rejections(tf))).run()
+                decisions = report_progress(decisions, args.progress_every)
             else:
                 results = MongoV2ResultRepository(mongo_uri=mongo_uri, database=args.database)
             results.begin_run(run_id=run_id, start=args.start, end=args.end,

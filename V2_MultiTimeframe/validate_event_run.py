@@ -34,9 +34,10 @@ def validate(repository, run_id, reference_path):
     last_event_order = None
     priority = {"D1": 0, "H4": 1, "H1": 2}
     compressed_bytes = raw_bytes = 0
+    rejection_count = 0
 
     def consume_event(e):
-        nonlocal seq, last_event_order
+        nonlocal seq, last_event_order, rejection_count
         order = (e["observed_at"], priority[e["timeframe"]])
         if e["seq"] != seq + 1 or (last_event_order is not None and order < last_event_order):
             raise ValueError("Event sequence/order mismatch")
@@ -45,6 +46,8 @@ def validate(repository, run_id, reference_path):
         seq += 1
         last_event_order = order
         apply_event(rows, e)
+        if e["kind"] == "reaction_rejected":
+            rejection_count += 1
 
     with Path(reference_path).open(encoding="utf-8") as reference:
         for snapshot in repository.snapshots.find(scope).sort("decision_seq", 1):
@@ -85,6 +88,8 @@ def validate(repository, run_id, reference_path):
         event = next(events, None)
     if count != run["decision_count"] or seq != run["total_event_count"]:
         raise ValueError("Run totals mismatch")
+    if rejection_count != run.get("total_rejection_count", 0):
+        raise ValueError("Rejection audit count mismatch")
     if not count or last_at != run["last_decision_at"]:
         raise ValueError("Invalid completion marker")
     last = repository.snapshots.find_one({**scope, "decision_seq": count})
@@ -92,6 +97,7 @@ def validate(repository, run_id, reference_path):
         raise ValueError("Committed watermark mismatch")
     return {"run_id": run_id, "decisions": count, "events": seq,
             "zones": sum(len(z) for z in rows.values()), "all_decisions_match": True,
+            "zero_distance_rejections": rejection_count,
             "all_event_states_match": True, "raw_bytes": raw_bytes,
             "compressed_bytes": compressed_bytes}
 

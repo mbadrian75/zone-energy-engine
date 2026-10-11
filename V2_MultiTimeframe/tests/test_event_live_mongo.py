@@ -16,6 +16,41 @@ def has_scoped_unique_index(indexes):
 @unittest.skipUnless(os.environ.get("ZONE_ENERGY_LIVE_MONGO_TEST") == "1",
                      "Set ZONE_ENERGY_LIVE_MONGO_TEST=1 for real MongoDB contract test")
 class LiveMongoTests(unittest.TestCase):
+    def test_zero_distance_audit_binary_roundtrip(self):
+        from test_zero_distance_policy import seeded, report_candles
+        from v1_adapter import V1ZoneEngineAdapter
+        from types import SimpleNamespace
+        repo = MongoEventRepository(mongo_uri=os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/"),
+                                   database=os.environ.get("ZONE_ENERGY_TEST_DATABASE", "market_data"))
+        run_id = "live-zero-distance-" + uuid4().hex
+        try:
+            repo.begin_run(run_id=run_id, start=datetime(2011, 2, 10, tzinfo=timezone.utc),
+                end=datetime(2011, 2, 11, tzinfo=timezone.utc),
+                year_candles={"H1": 5933, "H4": 1601, "D1": 313})
+            adapter = V1ZoneEngineAdapter(lambda tf, cfg: SimpleNamespace(),
+                {"H1": 5933, "H4": 1601, "D1": 313})
+            engine = seeded()
+            engine.process(report_candles()[2])
+            adapter.engines["H1"] = engine
+            at = datetime(2011, 2, 10, 7, tzinfo=timezone.utc)
+            state = adapter.snapshot("H1")
+            repo.observe("H1", at, state, rejections=engine.recent_policy_rejections)
+            p = SimpleNamespace(at=at, zones={tf: adapter.snapshot(tf) for tf in ("H1", "H4", "D1")},
+                                last_closed_at={"H1": at, "H4": None, "D1": None})
+            repo.append_points([p])
+            repo.finish_run()
+            reader = MongoEventReader(repo, run_id)
+            self.assertEqual(reader.reconstruct(at), reader.reconstruct(at, from_events=True))
+            audit = repo.events.find_one({"run_id": run_id, "kind": "reaction_rejected"})
+            self.assertEqual(audit["reaction"]["interaction_id"], 1800)
+            self.assertEqual(repo.runs.find_one({"run_id": run_id})["total_rejection_count"], 1)
+            print("Retained zero-distance audit run:", run_id)
+        except BaseException as exc:
+            repo.fail_run(exc)
+            raise
+        finally:
+            repo.close()
+
     def test_indexes_binary_roundtrip_and_duplicate_run(self):
         from pymongo.errors import DuplicateKeyError
         repo = MongoEventRepository(mongo_uri=os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/"),

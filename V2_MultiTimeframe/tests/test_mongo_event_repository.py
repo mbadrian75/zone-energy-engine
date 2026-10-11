@@ -288,6 +288,49 @@ class EventTests(unittest.TestCase):
         self.repo.finish_run()
         self.assertEqual(self.reader().reconstruct(b.at, from_events=True)["timeframes"], b.zones)
 
+    def test_real_zero_distance_policy_is_audited_and_reconstructs(self):
+        from test_zero_distance_policy import seeded, report_candles
+        from v1_adapter import V1ZoneEngineAdapter
+        from types import SimpleNamespace
+        import tempfile
+        repo = MongoEventRepository(client=client(), event_batch_size=2)
+        repo.begin_run(run_id="policy", start=datetime(2011, 2, 10, tzinfo=timezone.utc),
+            end=datetime(2011, 2, 11, tzinfo=timezone.utc),
+            year_candles={"H1": 5933, "H4": 1601, "D1": 313})
+        adapter = V1ZoneEngineAdapter(lambda tf, config: SimpleNamespace(),
+            {"H1": 5933, "H4": 1601, "D1": 313})
+        adapter.engines["H1"] = seeded()
+        candle = report_candles()[2]
+        bar = ClosedBar("H1", datetime(2011, 2, 10, 7, tzinfo=timezone.utc),
+                        candle.open, candle.high, candle.low, candle.close)
+        ps = []
+        def decisions():
+            for p in MultiTimeframeReplay({"H1": [bar], "H4": [], "D1": []}, adapter,
+                on_observation=lambda tf, at, state: repo.observe(tf, at, state,
+                    rejections=adapter.recent_rejections(tf))).run():
+                ps.append(p)
+                yield p
+        repo.append_points(decisions())
+        repo.finish_run()
+        reader = MongoEventReader(repo, "policy")
+        self.assertEqual(reader.reconstruct(ps[0].at, from_events=True)["timeframes"], ps[0].zones)
+        self.assertEqual(repo.rejection_count, 1)
+        self.assertEqual(repo.runs.docs["policy"]["total_rejection_count"], 1)
+        audit = next(e for e in repo.events.docs.values() if e["kind"] == "reaction_rejected")
+        self.assertEqual(audit["zone_id"], "H1:386")
+        self.assertEqual(audit["reaction"]["interaction_id"], 1800)
+        self.assertEqual(audit["reaction"]["start_price"], 1360.43)
+        self.assertEqual(reader.reconstruct(ps[0].at), reader.reconstruct(ps[0].at, from_events=True))
+        with tempfile.TemporaryDirectory() as directory:
+            reference = Path(directory) / "policy.jsonl"
+            reference.write_text(json.dumps(dict(symbol="XAUUSD", decision_at=ps[0].at.isoformat(),
+                last_closed_at={tf: t.isoformat() if t else None for tf, t in ps[0].last_closed_at.items()},
+                timeframes=ps[0].zones)) + "\n", encoding="utf-8")
+            self.assertEqual(validate(repo, "policy", reference)["zero_distance_rejections"], 1)
+            audit["reaction"]["end_price"] = 1360.44
+            with self.assertRaises(ValueError):
+                validate(repo, "policy", reference)
+
 
 if __name__ == "__main__":
     unittest.main()
