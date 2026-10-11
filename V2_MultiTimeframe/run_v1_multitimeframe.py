@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "V1" / "src"))
 
 from multi_timeframe_replay import MultiTimeframeReplay, TIMEFRAMES
-from market_streams import completed_bars
+from market_streams import completed_bars, paged_candles
 from v1_adapter import V1ZoneEngineAdapter, DURATION
 from zone_energy.data import MarketDataRepository
 from zone_energy.engine.zone_boundary_service import ZoneBoundaryService
@@ -81,7 +81,8 @@ def main() -> None:
         streams = {
             tf: completed_bars(
                 tf,
-                market.stream_candles(
+                paged_candles(
+                    market,
                     tf,
                     (args.start - DURATION[tf]).replace(tzinfo=None),
                     args.end.replace(tzinfo=None),
