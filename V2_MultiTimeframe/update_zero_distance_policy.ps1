@@ -39,7 +39,7 @@ try {
         New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent) | Out-Null
         Copy-Item -LiteralPath (Join-Path $resolvedStage $relative) -Destination $target -Force
     }
-    Write-Host "Updated V2 policy files from $Revision. Running fresh January smoke."
+    Write-Host "Updated V2 event-storage and policy files from $Revision. Running fresh January smoke."
     & (Join-Path $PSScriptRoot 'smoke_event_mongo.ps1') -PythonPath $PythonPath -Database $Database
 } finally {
     # Remove only the known files and empty directories from our checked staging

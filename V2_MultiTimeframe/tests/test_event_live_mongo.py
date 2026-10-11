@@ -16,6 +16,37 @@ def has_scoped_unique_index(indexes):
 @unittest.skipUnless(os.environ.get("ZONE_ENERGY_LIVE_MONGO_TEST") == "1",
                      "Set ZONE_ENERGY_LIVE_MONGO_TEST=1 for real MongoDB contract test")
 class LiveMongoTests(unittest.TestCase):
+    def test_zone_removal_reappearance_and_revision_keep_earlier_state(self):
+        repo = MongoEventRepository(mongo_uri=os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/"),
+                                   database=os.environ.get("ZONE_ENERGY_TEST_DATABASE", "market_data"))
+        run_id = "live-membership-" + uuid4().hex
+        try:
+            repo.begin_run(run_id=run_id, start=datetime(2025, 1, 1, tzinfo=timezone.utc),
+                end=datetime(2025, 2, 1, tzinfo=timezone.utc),
+                year_candles={"H1": 5933, "H4": 1601, "D1": 313})
+            a, b, c, d = point(1), point(2), point(3), point(4)
+            b.zones["H1"]["zones"] = []
+            c.zones["H1"]["zones"][0].update(lower_price=98.0, creation_index=2, created_at_index=2)
+            d.zones["H1"]["zones"][0].update(lower_price=97.0, creation_index=2, created_at_index=2)
+            def points():
+                for p in (a, b, c, d):
+                    repo.observe("H1", p.at, p.zones["H1"])
+                    yield p
+            repo.append_points(points(), batch_size=2)
+            repo.finish_run()
+            reader = MongoEventReader(repo, run_id)
+            for p in (a, b, c, d):
+                self.assertEqual(reader.reconstruct(p.at, from_events=True)["timeframes"], p.zones)
+                self.assertEqual(reader.reconstruct(p.at), reader.reconstruct(p.at, from_events=True))
+            marker = repo.runs.find_one({"run_id": run_id})
+            self.assertEqual((marker["total_removal_count"], marker["total_revision_count"]), (1, 1))
+            print("Retained zone membership run:", run_id)
+        except BaseException as exc:
+            repo.fail_run(exc)
+            raise
+        finally:
+            repo.close()
+
     def test_zero_distance_audit_binary_roundtrip(self):
         from test_zero_distance_policy import seeded, report_candles
         from v1_adapter import V1ZoneEngineAdapter

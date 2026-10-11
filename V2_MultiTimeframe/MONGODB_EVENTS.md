@@ -1,4 +1,28 @@
-# MongoDB Event-Based V2 (schema_version=2)
+# MongoDB Event-Based V2 (schema_version=3)
+
+## Observed zone membership and revisions
+
+V1's origin-invalidation replay restores an earlier engine seed and rebuilds
+its reaction window. A formerly visible zone can disappear, reappear or be
+replaced under the same local ID. The writer records the engine's actual state
+at each observation, rather than assuming every formerly visible ID stays
+present forever. `removed` events contain the full prior zone and null after;
+`revised` events contain full before/after states when boundaries or creation
+identity change. A removed local ID can subsequently get another `created`
+event. No prior event, snapshot or market record is updated or deleted.
+
+The reader verifies before states and applies membership/revision changes only
+through the requested H1 cutoff. Earlier decisions retain the former zone,
+identity and energy; later decisions contain exactly the engine's visible zones.
+Completed runs count total_removal_count and total_revision_count; validation
+checks these totals and full reconstructed states. Report `zones` denotes the
+final visible zone count, not all historically observed zone incarnations.
+
+New writes use schema 3 in the existing dedicated event collections, with the
+same schema/run-scoped indexes. Existing schema-2 runs remain untouched. Read
+them explicitly with `MongoEventReader(repo, run_id, schema_version=2)` or
+`validate_event_run.py --schema-version 2`. Fresh schema-3 January smoke is
+required before a new long replay; a schema-2 run cannot pass that gate.
 
 ## Approved zero-distance policy
 
@@ -18,7 +42,7 @@ origin/target/interaction IDs, equal endpoints, indexes and observed timestamp.
 Readers replay these as audit records without changing zone state. Validation
 checks their invariants and completed-run `total_rejection_count`. New runs
 declare `reaction_policy=reject-zero-distance-v1`. Use the updated reader and
-validator for runs containing rejection events; the schema remains version 2.
+validator for runs containing rejection events and membership revisions.
 
 This approved policy changes the source-code fingerprint. The earlier January
 smoke must therefore be replaced by a **fresh successful smoke run** before any
@@ -55,10 +79,11 @@ such changes are recorded exactly rather than treated as cumulative counters.
 
 Creation events contain complete static identity/boundaries and initial dynamic
 state. Later events contain the four dynamic fields and the exact changed-field
-list. Unchanged zones generate no events. All known zones, including broken
-ones, remain in state. Static identity changes, disappearing zones, future
-creation indexes, malformed states, NaN/Infinity, unordered closes, and
-sub-millisecond timestamps are rejected.
+list. Unchanged zones generate no events. The current state includes all zones
+currently visible in the engine, including broken ones. Missing or revised
+zones generate membership/revision events; their earlier observations remain
+in immutable history. Future creation indexes, malformed states, NaN/Infinity,
+unordered closes and sub-millisecond timestamps are rejected.
 
 Each H1 checkpoint contains the complete causal decision, all zone boundaries,
 zone ordering and exact numeric values. Compression is lossless. Its event_seq
@@ -70,7 +95,7 @@ retained, but are excluded from that decision's cutoff.
 compressed checkpoint. `from_events=True` independently replays zone creation
 and changes through that decision's event cutoff; zone ordering and timeframe summary metadata
 comes from the checkpoint. An instant without an H1 decision is rejected.
-Readers accept only completed schema-2 runs. Reading and validation perform no
+Readers accept only completed runs in the selected schema. Reading and validation perform no
 inserts, updates, index creation or cleanup.
 
 ## Identity, batching and crash semantics

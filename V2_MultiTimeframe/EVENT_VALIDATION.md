@@ -1,5 +1,21 @@
 # Validation record — 2026-10-11
 
+Latest storage model: schema 3 records observed zone removal and identity
+revision instead of rejecting changes caused by V1 origin-invalidation replay.
+Local suite: 48 tests discovered, 45 passed, 3 live tests skipped. Earlier H1
+states, removed/reappearing local IDs, full before/after revisions, corrupted
+prior-state rejection and schema-2 read compatibility are covered. All 504
+January decisions and 116 zones still match JSONL and event reconstruction.
+No V1 or market-data file changed. A fresh schema-3 server smoke is required.
+
+The user supplied a successful policy-enabled schema-2 server smoke:
+all 45 tests passed, run `v2-events-jan2025-e5342cec820e4db298140b40f630f306`,
+504 decisions, 19,868 events, 116 zones, both equivalence flags true. The next
+long run `v2-events-2010-2026-c9603a7a02fe4af48001f298fdb74d1f` then passed
+8,000 H1 decisions before the writer's incorrect “Known zones cannot disappear”
+assumption stopped it. It remains an incomplete run; no resume or deletion is
+performed. Schema 3 keeps all old records and scopes new writes to version 3.
+
 After the user approved rejecting zero-distance reactions, V2 now implements
 that policy without modifying V1 files. Local validation: 45 tests discovered,
 43 passed, 2 opt-in live MongoDB tests skipped. The supplied H1/2011-02-10

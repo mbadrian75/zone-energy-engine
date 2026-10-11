@@ -55,7 +55,7 @@ def main() -> None:
     parser.add_argument("--progress-every", type=int, default=1000,
                         help="Print processed H1 progress in event mode (not a commit marker)")
     parser.add_argument("--validated-smoke-run-id",
-                        help="Completed January schema-2 smoke required for event replays over 31 days")
+                        help="Completed January schema-3 smoke required for event replays over 31 days")
     args = parser.parse_args()
     if args.start >= args.end:
         parser.error("--start must be before --end")

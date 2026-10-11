@@ -1,4 +1,4 @@
-"""Schema 2: closed-bar events and compressed H1 checkpoints, append only.
+"""Schema 3: causal zone membership/revisions and compressed H1 checkpoints.
 
 Only completed runs are public. A write error poisons the writer; there is no
 retry/resume. Ordered inserts may leave partial batches. The run progress marker
@@ -13,7 +13,7 @@ from pathlib import Path
 
 from mongo_result_repository import TIMEFRAMES, utc_naive as _utc_naive
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 PREFIX = "zone_energy_v2_event_"
 STATIC = ("zone_id", "local_zone_id", "lower_price", "upper_price",
           "creation_index", "created_at_index")
@@ -78,6 +78,13 @@ def apply_event(rows, event):
     tf, zid, after = event["timeframe"], event["zone_id"], event["after"]
     if tf not in TIMEFRAMES or not zid.startswith(tf + ":"):
         raise ValueError("Invalid event zone identity")
+    if event["kind"] == "removed":
+        if (zid not in rows[tf] or after is not None
+                or event["before"] != rows[tf][zid]
+                or event["changed_fields"] != ["membership"]):
+            raise ValueError("Invalid zone removal or prior state mismatch")
+        del rows[tf][zid]
+        return
     if event["kind"] == "created":
         if zid in rows[tf] or set(after) != set(STATIC + DYNAMIC) or after["zone_id"] != zid:
             raise ValueError("Invalid or duplicate creation")
@@ -86,12 +93,18 @@ def apply_event(rows, event):
         if zid not in rows[tf] or set(after) != set(DYNAMIC):
             raise ValueError("Change precedes creation or changes static identity")
         changed = [k for k in DYNAMIC if rows[tf][zid][k] != after[k]]
+    elif event["kind"] == "revised":
+        if (zid not in rows[tf] or set(after) != set(STATIC + DYNAMIC)
+                or after["zone_id"] != zid or event["before"] != rows[tf][zid]
+                or not any(rows[tf][zid][k] != after[k] for k in STATIC)):
+            raise ValueError("Invalid zone revision or prior state mismatch")
+        changed = [k for k in STATIC + DYNAMIC if rows[tf][zid][k] != after[k]]
     else:
         raise ValueError("Unsupported event kind")
     if not changed or changed != event["changed_fields"]:
         raise ValueError("Event changed_fields mismatch")
     encode(after)
-    if event["kind"] == "created":
+    if event["kind"] in ("created", "revised"):
         rows[tf][zid] = deepcopy(after)
     else:
         rows[tf][zid].update(after)
@@ -128,6 +141,7 @@ class MongoEventRepository:
         self.pending_snapshots = []
         self.seq = self.count = 0
         self.rejection_count = 0
+        self.removal_count = self.revision_count = 0
         self.last_observation = self.last_decision = None
         self.observed_at = {tf: None for tf in TIMEFRAMES}
         self.states = {tf: {"candle_index": None, "median_active_energy": None,
@@ -171,6 +185,7 @@ class MongoEventRepository:
                "end": self.end, "year_candles": deepcopy(year_candles),
                "code_fingerprint": code_fingerprint(),
                "reaction_policy": "reject-zero-distance-v1",
+               "zone_history_model": "observed-membership-and-revisions-v1",
                "decision_count": 0, "committed_event_seq": 0,
                "started_at": datetime.now(timezone.utc).replace(tzinfo=None)}
         self.runs.insert_one(doc)
@@ -243,20 +258,30 @@ class MongoEventRepository:
                 raise ValueError("Invalid effective energy")
             new[zid] = zone
             previous = old.get(zid)
-            if previous and any(zone[k] != previous[k] for k in STATIC):
-                raise ValueError("Static zone identity changed")
-            changed = [k for k in DYNAMIC if previous is None or zone[k] != previous[k]]
+            revised = previous is not None and any(zone[k] != previous[k] for k in STATIC)
+            fields = STATIC + DYNAMIC if revised else DYNAMIC
+            changed = [k for k in fields if previous is None or zone[k] != previous[k]]
             if changed:
                 events.append(self._doc(self.seq + len(events) + 1,
                     seq=self.seq + len(events) + 1, timeframe=timeframe, zone_id=zid,
                     observed_at=stamp, candle_index=state["candle_index"],
-                    kind="created" if previous is None else "changed",
+                    kind="created" if previous is None else "revised" if revised else "changed",
                     changed_fields=changed,
-                    after=deepcopy(zone) if previous is None else {k: zone[k] for k in DYNAMIC}))
-        if old.keys() - new.keys():
-            raise ValueError("Known zones cannot disappear")
+                    after=deepcopy(zone) if previous is None or revised else {k: zone[k] for k in DYNAMIC},
+                    **({"before": deepcopy(previous), "reason": "engine_state_revision"} if revised else {})))
+        # V1 invalidation replay can remove a previously visible zone or later
+        # reuse its local ID. Record observed membership, never rewrite history.
+        for zid in old:
+            if zid not in new:
+                events.append(self._doc(self.seq + len(events) + 1,
+                    seq=self.seq + len(events) + 1, timeframe=timeframe, zone_id=zid,
+                    observed_at=stamp, candle_index=index, kind="removed",
+                    changed_fields=["membership"], before=deepcopy(old[zid]), after=None,
+                    reason="absent_from_engine_state"))
         self.seq += len(events)
         self.rejection_count += sum(e["kind"] == "reaction_rejected" for e in events)
+        self.removal_count += sum(e["kind"] == "removed" for e in events)
+        self.revision_count += sum(e["kind"] == "revised" for e in events)
         self.states[timeframe] = deepcopy(state)
         self.observed_at[timeframe] = stamp
         self.last_observation = order
@@ -326,6 +351,8 @@ class MongoEventRepository:
             result = self.runs.update_one({"_id": self.run_id, "status": "running", **self._scope()},
                 {"$set": {"status": "completed", "total_event_count": self.seq,
                           "total_rejection_count": self.rejection_count,
+                          "total_removal_count": self.removal_count,
+                          "total_revision_count": self.revision_count,
                           "finished_at": datetime.now(timezone.utc).replace(tzinfo=None)}})
             if result.matched_count != 1:
                 raise RuntimeError("Completion marker failed")
@@ -345,14 +372,16 @@ class MongoEventRepository:
 
 
 class MongoEventReader:
-    def __init__(self, repository, run_id):
+    def __init__(self, repository, run_id, *, schema_version=SCHEMA_VERSION):
+        if schema_version not in (2, 3):
+            raise ValueError("Supported event schemas: 2 and 3")
         self.repo = repository
-        self.scope = {"run_id": run_id, "schema_version": SCHEMA_VERSION}
+        self.scope = {"run_id": run_id, "schema_version": schema_version}
 
     def _completed(self):
         run = self.repo.runs.find_one(self.scope)
         if run is None or run["status"] != "completed":
-            raise RuntimeError("Only completed schema-2 runs may be read")
+            raise RuntimeError(f"Only completed schema-{self.scope['schema_version']} runs may be read")
         return run
 
     def reconstruct(self, at, *, from_events=False):
