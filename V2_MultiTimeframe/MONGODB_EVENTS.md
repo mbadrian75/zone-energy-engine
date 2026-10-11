@@ -1,5 +1,11 @@
 # MongoDB Event-Based V2 (schema_version=2)
 
+For V1 replay failures, `diagnostics/diagnose_replay.py` repeats the same causal
+replay in read-only mode and saves a fresh local JSON report with exact traceback
+context. It never writes MongoDB data or changes engine behavior. Its placement
+under diagnostics/ leaves the production engine fingerprint unchanged. Use the
+same start/end and yearly counts as the failed run, and a new `--output` path.
+
 Opt in with `--storage mongodb-events`. JSONL and the existing `--storage
 mongodb` schema-1 implementation remain available. No V1 file, market-data
 collection, or legacy result collection is altered. Only these collections are used:
