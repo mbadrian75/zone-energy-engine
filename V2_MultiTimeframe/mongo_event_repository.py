@@ -62,6 +62,19 @@ def unpack(doc):
 
 
 def apply_event(rows, event):
+    if event["kind"] == "reaction_rejected":
+        reaction = event["reaction"]
+        if (reaction["policy_version"] != "reject-zero-distance-v1"
+                or reaction["reason"] != "zero_distance" or reaction["distance"] != 0
+                or reaction["start_price"] != reaction["end_price"]
+                or reaction["movement_time"] <= 0
+                or reaction["end_index"] - reaction["start_index"] != reaction["movement_time"]
+                or reaction["reaction_index"] != reaction["end_index"]
+                or not reaction["end_index"] < reaction["rejected_at"] <= event["candle_index"]
+                or event["zone_id"] != f"{event['timeframe']}:{reaction['zone_id']}"):
+            raise ValueError("Invalid zero-distance rejection audit")
+        encode(reaction)
+        return
     tf, zid, after = event["timeframe"], event["zone_id"], event["after"]
     if tf not in TIMEFRAMES or not zid.startswith(tf + ":"):
         raise ValueError("Invalid event zone identity")
@@ -114,6 +127,7 @@ class MongoEventRepository:
         self.pending_events = []
         self.pending_snapshots = []
         self.seq = self.count = 0
+        self.rejection_count = 0
         self.last_observation = self.last_decision = None
         self.observed_at = {tf: None for tf in TIMEFRAMES}
         self.states = {tf: {"candle_index": None, "median_active_energy": None,
@@ -156,6 +170,7 @@ class MongoEventRepository:
                "status": "running", "symbol": "XAUUSD", "start": self.start,
                "end": self.end, "year_candles": deepcopy(year_candles),
                "code_fingerprint": code_fingerprint(),
+               "reaction_policy": "reject-zero-distance-v1",
                "decision_count": 0, "committed_event_seq": 0,
                "started_at": datetime.now(timezone.utc).replace(tzinfo=None)}
         self.runs.insert_one(doc)
@@ -169,15 +184,15 @@ class MongoEventRepository:
             self.events.insert_many(self.pending_events, ordered=True)
             self.pending_events = []
 
-    def observe(self, timeframe, at, state):
+    def observe(self, timeframe, at, state, *, rejections=()):
         self._running()
         try:
-            self._observe(timeframe, at, state)
+            self._observe(timeframe, at, state, rejections)
         except BaseException:
             self.status = "poisoned"
             raise
 
-    def _observe(self, timeframe, at, state):
+    def _observe(self, timeframe, at, state, rejections):
         stamp = utc_naive(at)
         if timeframe not in TIMEFRAMES or not self.start <= stamp <= self.end:
             raise ValueError("Invalid observation timeframe/interval")
@@ -198,6 +213,13 @@ class MongoEventRepository:
         old = {z["zone_id"]: z for z in self.states[timeframe]["zones"]}
         new = {}
         events = []
+        for reaction in rejections:
+            event = self._doc(self.seq + len(events) + 1,
+                seq=self.seq + len(events) + 1, timeframe=timeframe,
+                zone_id=f"{timeframe}:{reaction['zone_id']}", observed_at=stamp,
+                candle_index=index, kind="reaction_rejected", reaction=deepcopy(reaction))
+            apply_event({}, event)  # Validate audit before any insert.
+            events.append(event)
         for zone in state["zones"]:
             zid = zone["zone_id"]
             if not isinstance(zid, str) or zid != f"{timeframe}:{zone['local_zone_id']}":
@@ -234,6 +256,7 @@ class MongoEventRepository:
         if old.keys() - new.keys():
             raise ValueError("Known zones cannot disappear")
         self.seq += len(events)
+        self.rejection_count += sum(e["kind"] == "reaction_rejected" for e in events)
         self.states[timeframe] = deepcopy(state)
         self.observed_at[timeframe] = stamp
         self.last_observation = order
@@ -302,6 +325,7 @@ class MongoEventRepository:
             self._flush()
             result = self.runs.update_one({"_id": self.run_id, "status": "running", **self._scope()},
                 {"$set": {"status": "completed", "total_event_count": self.seq,
+                          "total_rejection_count": self.rejection_count,
                           "finished_at": datetime.now(timezone.utc).replace(tzinfo=None)}})
             if result.matched_count != 1:
                 raise RuntimeError("Completion marker failed")

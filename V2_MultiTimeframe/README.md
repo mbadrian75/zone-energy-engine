@@ -1,6 +1,6 @@
 # Zone Energy V2 — XAUUSD multi-timeframe integration
 
-The V2 folder does not modify V1. It instantiates one unmodified V1 `ReplayEngine` per timeframe (H1, H4, D1), then produces one combined decision snapshot at every H1 close.
+The V2 folder does not modify V1 files. It instantiates one V2 subclass of V1 `ReplayEngine` per timeframe (H1, H4, D1), then produces one combined decision snapshot at every H1 close. The approved `reject-zero-distance-v1` policy rejects opposite reactions whose endpoint equals the current interaction's start price before finalization; other V1 processing and positive energy rules remain intact.
 
 ## Architecture
 
