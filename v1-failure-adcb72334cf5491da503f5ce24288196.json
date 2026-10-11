@@ -1,0 +1,111 @@
+{
+  "error_type": "ValueError",
+  "error": "Interaction distance must be greater than zero",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Project\\zone-energy-engine\\zone-energy-engine\\V2_MultiTimeframe\\diagnostics\\diagnose_replay.py\", line 101, in main\n    for point in MultiTimeframeReplay(streams, adapter).run():\n                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\Project\\zone-energy-engine\\zone-energy-engine\\V2_MultiTimeframe\\multi_timeframe_replay.py\", line 93, in run\n    self.engine.on_closed_bar(tf, bar)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^\n  File \"C:\\Project\\zone-energy-engine\\zone-energy-engine\\V2_MultiTimeframe\\v1_adapter.py\", line 62, in on_closed_bar\n    self.engines[timeframe].process(candle)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^\n  File \"C:\\Project\\zone-energy-engine\\zone-energy-engine\\V1\\src\\zone_energy\\replay\\replay_engine.py\", line 95, in process\n    events = staged._process_once(candle)\n  File \"C:\\Project\\zone-energy-engine\\zone-energy-engine\\V1\\src\\zone_energy\\replay\\replay_engine.py\", line 241, in _process_once\n    self._activate_pending(pending, candle, index)\n    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Project\\zone-energy-engine\\zone-energy-engine\\V1\\src\\zone_energy\\replay\\replay_engine.py\", line 423, in _activate_pending\n    InteractionFinalizer.finalize(current[1],current[0],target,state.zones,index,\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                                 ending_reversal=reversal)\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Project\\zone-energy-engine\\zone-energy-engine\\V1\\src\\zone_energy\\engine\\interaction_finalizer.py\", line 55, in finalize\n    InteractionCloser.close(pending, origin_zone, endpoint)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Project\\zone-energy-engine\\zone-energy-engine\\V1\\src\\zone_energy\\engine\\interaction_closer.py\", line 81, in close\n    raise ValueError(\n    ...<2 lines>...\n    )\nValueError: Interaction distance must be greater than zero\n",
+  "timeframe": "H1",
+  "requested_closed_bar": {
+    "timeframe": "H1",
+    "closed_at": "2011-02-10T07:00:00+00:00",
+    "open": 1358.18,
+    "high": 1358.18,
+    "low": 1356.48,
+    "close": 1357.8,
+    "volume": 0.0
+  },
+  "failed_internal_candle": {
+    "datetime": "2011-02-10T06:00:00",
+    "open": 1358.18,
+    "high": 1358.18,
+    "low": 1356.48,
+    "close": 1357.8,
+    "volume": 0.0
+  },
+  "failed_internal_index": 6841,
+  "pending_reaction": {
+    "zone_id": 386,
+    "role_change": true,
+    "reversal": {
+      "type": "resistance",
+      "extreme_price": 1360.43,
+      "extreme_index": 6840,
+      "detection_index": 6841
+    },
+    "c1": {
+      "datetime": "2011-02-10T04:00:00",
+      "open": 1357.3,
+      "high": 1358.53,
+      "low": 1356.53,
+      "close": 1357.18,
+      "volume": 0.0
+    },
+    "c2": {
+      "datetime": "2011-02-10T05:00:00",
+      "open": 1357.03,
+      "high": 1360.43,
+      "low": 1356.93,
+      "close": 1358.1,
+      "volume": 0.0
+    },
+    "c3": {
+      "datetime": "2011-02-10T06:00:00",
+      "open": 1358.18,
+      "high": 1358.18,
+      "low": 1356.48,
+      "close": 1357.8,
+      "volume": 0.0
+    },
+    "previous_type": "support",
+    "c2_breaks": []
+  },
+  "interaction": {
+    "id": 1800,
+    "zone_id": 424,
+    "state": "open",
+    "start_price": 1360.43,
+    "start_index": 6836,
+    "end_price": null,
+    "end_index": null,
+    "distance": null,
+    "movement_time": null,
+    "previous_distance": 3.5699999999999363,
+    "previous_movement_time": 2,
+    "breaks": [],
+    "movement_energy": null,
+    "total_break_evidence": null,
+    "base_energy": null
+  },
+  "origin_zone": {
+    "id": 424,
+    "type": "support",
+    "state": "active",
+    "lower_price": 1356.63,
+    "upper_price": 1360.95,
+    "creation_extreme": 1356.63,
+    "creation_index": 6268,
+    "created_at_index": 6269
+  },
+  "endpoint_zone": {
+    "id": 386,
+    "type": "resistance",
+    "state": "broken",
+    "lower_price": 1359.83,
+    "upper_price": 1361.48,
+    "creation_extreme": 1360.43,
+    "creation_index": 6840,
+    "created_at_index": 5587
+  },
+  "end_price": 1360.43,
+  "end_index": 6840,
+  "distance": 0.0,
+  "movement_time": 4,
+  "status": "failed",
+  "completed_h1_decisions": 6841,
+  "last_successful_h1": "2011-02-10T06:00:00+00:00",
+  "start": "2010-01-01T00:00:00+00:00",
+  "end": "2026-01-01T00:00:00+00:00",
+  "year_candles": {
+    "H1": 5933,
+    "H4": 1601,
+    "D1": 313
+  }
+}
