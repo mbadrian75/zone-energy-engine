@@ -213,3 +213,17 @@ leave zone state unchanged. Run metadata includes `boundary_policy` and
 `zero_width_boundary_rejections`. This is an additive schema-3 event extension;
 old records are not rewritten. The source fingerprint requires a fresh January
 smoke before a long replay with this policy.
+# Replay seed memory
+
+V2 spills reaction seeds to private gzip/pickle temporary files rather than
+retaining the complete chain of engine states in RAM. V1 still restores seeds
+through its existing `copy(seed)` operation; earlier seed references remain
+available for cascading origin invalidation. Live Mongo clients and boundary
+services are not serialized. The archive is process-local, uses only its own
+trusted files, and is not a resumable engine checkpoint. Normal runner exit
+removes the temporary archive; hard kills may leave temporary files behind.
+Keep sufficient free disk space. `ZONE_ENERGY_SEED_DIRECTORY` may name an existing
+directory on a disk with more space; otherwise the OS temporary directory is
+used. Archive I/O/corruption errors fail the run rather than skipping history.
+Current engine state still grows with history, and disk I/O adds work; this does
+not promise constant total memory or completion of the 16-year replay.

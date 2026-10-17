@@ -7,6 +7,8 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $files = @(
+    'seed_archive.py',
+    'tests/test_seed_archive.py',
     'market_streams.py',
     'tests/test_paged_market.py',
     'zero_distance_policy.py',

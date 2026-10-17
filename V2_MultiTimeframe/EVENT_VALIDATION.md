@@ -106,3 +106,17 @@ server history. Tests also cover positive-boundary V1 equivalence, preserving
 the open interaction, failed commit isolation, historical audit reporting,
 Mongo event reconstruction and corrupt audits. A live Mongo test is opt-in.
 Full 2010–2026 replay completion is still unverified.
+# Seed archive regression
+
+Server run f0ed86584c2244cfb8fc01d9bc8fe52e failed with MemoryError after its
+44175th committed H1 decision at 2017-04-19 20:00 UTC on 64-bit Python with
+64 GB physical RAM. Code inspection found a chain of retained full reaction
+seeds. V2 now spills those seeds without dropping reconstruction history.
+64 tests discovered: 60 passed locally, 4 live Mongo tests skipped. January
+JSONL/event equivalence remains 504 decisions and 116 zones. The unchanged V1
+origin-invalidation regression matches after every candle and exercises disk
+seed loading. A 200-seed test restores every prior seed. A synthetic 1000-step
+seed-chain stress test measured retained Python allocations 35,751,328 bytes
+before versus 320,577 bytes with archiving, with 1,204,964 compressed disk bytes.
+This measures the seed-chain mechanism, not actual 2010–2026 market replay.
+Full historical memory/throughput validation remains required on the server.

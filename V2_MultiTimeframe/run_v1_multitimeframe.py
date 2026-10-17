@@ -76,6 +76,7 @@ def main() -> None:
     mongo_uri = os.environ.get("ZONE_ENERGY_MONGO_URI", "mongodb://localhost:27017/")
     market = MarketDataRepository(mongo_uri, args.database)
     results = None
+    adapter = None
     try:
         market.ping()
         streams = {
@@ -135,6 +136,8 @@ def main() -> None:
                     count += 1
             print(f"H1 decision snapshots: {count}; output: {args.output}")
     finally:
+        if adapter is not None:
+            adapter.close()
         if results is not None:
             results.close()
         market.close()

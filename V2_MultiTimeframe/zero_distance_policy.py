@@ -10,6 +10,7 @@ import json
 from math import isfinite
 
 from zone_energy.replay.replay_engine import ReplayEngine
+from seed_archive import SeedArchive
 
 POLICY_VERSION = "reject-zero-distance-v1"
 BOUNDARY_POLICY_VERSION = "reject-zero-width-boundary-v1"
@@ -42,11 +43,14 @@ class _BoundaryGuard:
 
 class V2ReplayEngine(ReplayEngine):
     def process(self, candle, before_commit=None):
+        if not hasattr(self, "_seed_archive"):
+            self._seed_archive = SeedArchive(self.boundary_service)
         def key(record):
             return json.dumps(record, sort_keys=True, allow_nan=False)
         previous = Counter(key(record) for record in self.state.rejected_reactions
                            if record.get("policy_version") in _POLICIES)
         events = super().process(candle, before_commit=before_commit)
+        self._reaction_seed = self._seed_archive.store(self._reaction_seed)
         recent = []
         # V1 can replay an older reaction window when an origin is invalidated.
         # Compare the final committed histories, so newly rejected historical
@@ -61,6 +65,11 @@ class V2ReplayEngine(ReplayEngine):
                 recent.append(deepcopy(record))
         self.recent_policy_rejections = recent
         return events
+
+    def close(self):
+        archive = getattr(self, "_seed_archive", None)
+        if archive is not None:
+            archive.close()
 
     def _process_once(self, candle):
         # ReplayEngine stages shallow copies. Allocate new lists on the staged

@@ -67,6 +67,10 @@ class V1ZoneEngineAdapter:
         from copy import deepcopy
         return deepcopy(getattr(self.engines[timeframe], "recent_policy_rejections", []))
 
+    def close(self):
+        for engine in self.engines.values():
+            engine.close()
+
     def snapshot(self, timeframe: str) -> dict:
         if timeframe not in self.engines:
             raise ValueError(f"Unsupported timeframe: {timeframe}")
