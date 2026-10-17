@@ -12,6 +12,39 @@ from multi_timeframe_replay import ClosedBar, TIMEFRAMES
 from v1_adapter import DURATION
 
 
+def paged_candles(market, timeframe, start, end, *, page_size=1000):
+    """Read immutable market history without holding cursors during replay.
+
+    Fetch one extra row to detect duplicate timestamps at page boundaries.
+    Every cursor is exhausted and closed before any candle reaches the engine.
+    Source collections must remain unchanged throughout a replay.
+    """
+    if start >= end or page_size <= 0:
+        raise ValueError("Invalid market page interval or size")
+    collection = market._get_collection(timeframe)
+    previous = None
+    while True:
+        bounds = {"$gte": start, "$lt": end} if previous is None else {
+            "$gt": previous, "$lt": end}
+        cursor = collection.find({"datetime": bounds}).sort("datetime", 1).limit(page_size + 1)
+        try:
+            documents = list(cursor)
+        finally:
+            cursor.close()
+        last = previous
+        for document in documents:
+            stamp = document["datetime"]
+            if not start <= stamp < end or (last is not None and stamp <= last):
+                raise ValueError("Market timestamps must be unique and strictly increasing")
+            last = stamp
+        page = documents[:page_size]
+        for document in page:
+            yield market._document_to_candle(document)
+        if len(documents) <= page_size:
+            return
+        previous = page[-1]["datetime"]
+
+
 def completed_bars(timeframe: str, candles: Iterable, *, start: datetime,
                    end: datetime) -> Iterator[ClosedBar]:
     if timeframe not in TIMEFRAMES:

@@ -1,8 +1,12 @@
 # Zone Energy V2 — XAUUSD multi-timeframe integration
 
-The V2 folder does not modify V1. It instantiates one unmodified V1 `ReplayEngine` per timeframe (H1, H4, D1), then produces one combined decision snapshot at every H1 close.
+The V2 folder does not modify V1 files. It instantiates one V2 subclass of V1 `ReplayEngine` per timeframe (H1, H4, D1), then produces one combined decision snapshot at every H1 close. The approved `reject-zero-distance-v1` policy rejects opposite reactions whose endpoint equals the current interaction's start price before finalization; other V1 processing and positive energy rules remain intact.
 
 ## Architecture
+
+Event-based MongoDB storage with compressed H1 checkpoints is available through
+`--storage mongodb-events`. See [MONGODB_EVENTS.md](MONGODB_EVENTS.md) for schema,
+crash semantics, January equivalence, the long-replay gate and Windows smoke commands.
 
 1. `market_streams.py` converts start-stamped V1/Mongo candles into completed bars (UTC assumed). No incomplete bar is supplied to the zone engine.
 2. `multi_timeframe_replay.py` interleaves H1/H4/D1 based on candle close time. D1 and H4 closes at the same instant are processed before the H1 decision.

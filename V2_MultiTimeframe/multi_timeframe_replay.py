@@ -60,11 +60,13 @@ class MultiTimeframeReplay:
     compute zone scores using data that were unavailable at on_closed_bar time.
     """
 
-    def __init__(self, streams: Mapping[str, Iterable[ClosedBar]], engine: ZoneEngineAdapter):
+    def __init__(self, streams: Mapping[str, Iterable[ClosedBar]], engine: ZoneEngineAdapter,
+                 *, on_observation=None):
         if set(streams) != set(TIMEFRAMES):
             raise ValueError("Expected exactly H1, H4, D1 streams")
         self.streams = streams
         self.engine = engine
+        self.on_observation = on_observation
 
     def run(self) -> Iterator[DecisionPoint]:
         iterators = {tf: iter(self.streams[tf]) for tf in TIMEFRAMES}
@@ -90,6 +92,8 @@ class MultiTimeframeReplay:
             instant, _, tf, bar = heappop(heap)
             self.engine.on_closed_bar(tf, bar)
             last_seen[tf] = instant
+            if self.on_observation is not None:
+                self.on_observation(tf, instant, deepcopy(self.engine.snapshot(tf)))
             # Feed the next candle only after the current one is consumed.
             push_next(tf)
             if tf == "H1":
